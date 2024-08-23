@@ -31,10 +31,77 @@
 
   <title>Scouting Site</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    .loader {
+      border: 16px solid rgb(0, 0, 0);
+      /* Light grey */
+      border-top: 16px solid rgb(255, 102, 196);
+      /* Blue */
+      border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      animation: spin 2s linear infinite;
+      margin: 100px auto;
+    }
 
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 
-<body>
+<body style="background-color: rgb(30,30,30);">
+  <div class="loader" id="loader"></div>
+
+  <script>
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      // Dark mode
+      document.getElementsByTagName('body')[0].style.backgroundColor = 'rgb(30, 30, 30)';
+    } else {
+      // Light mode
+      document.getElementsByTagName('body')[0].style.backgroundColor = 'rgb(255, 255, 255)';
+    }
+    // Function to hide the loader
+    function hideLoader() {
+      const loader = document.getElementById('loader');
+      loader.classList.add('hidden');
+    }
+
+    // Create a MutationObserver to detect when .flutter-view is added to the DOM
+    const observer = new MutationObserver((mutationsList) => {
+      for (let mutation of mutationsList) {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach((node) => {
+            if (node.classList && node.classList.contains('flutter-view')) {
+              hideLoader();
+            }
+          });
+        }
+      }
+    });
+
+    // Start observing the body for added nodes
+    observer.observe(document.body, { childList: true, subtree: true });
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 
   <script>

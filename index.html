@@ -66,7 +66,7 @@
   </style>
 </head>
 
-<body style="background-color: rgb(255,255,255);"> 
+<body style="background-color: rgb(255,255,255);">
   <div class="loader" id="loader"></div>
 
   <script>
@@ -80,7 +80,7 @@
 
     function hideLoader() {
       const loader = document.getElementById('loader');
-      loader.classList.add('hidden');
+      loader.remove();
     }
 
     const observer = new MutationObserver((mutationsList) => {

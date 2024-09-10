@@ -85869,7 +85869,8 @@ q=q.gM(q)}s=r.h(0,q)
 break
 case 5:s=p.ahN()
 break
-case 4:q=A.j8(p.c)?1:0
+case 4:q=p.c
+q=A.j8(q==null?!1:q)?1:0
 s=p.e*q
 break
 default:s=p.e*A.fh(p.c)}return s},

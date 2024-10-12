@@ -5,7 +5,6 @@ import 'package:flutter/scheduler.dart';
 // Project imports:
 import 'package:scouting_site/pages/login_page.dart';
 import 'package:scouting_site/pages/summation/averages_page.dart';
-import 'package:scouting_site/pages/summation/scouting_entries_page.dart';
 import 'package:scouting_site/services/formatters/text_formatter_builder.dart';
 import 'package:scouting_site/services/localstorage.dart';
 import 'package:scouting_site/services/scouting/scouting.dart';
@@ -138,28 +137,7 @@ class _HomePageState extends State<HomePage> {
                 formatter: TextFormatterBuilder.integerTextFormatter(),
               ),
               const SizedBox(height: 5),
-              DropdownMenu<String>(
-                label: const Text(
-                  "Scouting On",
-                ),
-                initialSelection: Scouting.data.scoutedTeam,
-                onSelected: (value) {
-                  setState(() {
-                    _selectedTeam = value.toString();
-                    _selectedTeamIndex =
-                        _teams.indexOf(_selectedTeam ?? _teams[0]);
-                    Scouting.data.scoutedTeam = _selectedTeam;
-                  });
-                },
-                textStyle: TextStyle(
-                  color: isRedAllianceTeamSelected
-                      ? Colors.redAccent
-                      : Colors.blueAccent,
-                  fontWeight: FontWeight.bold,
-                ),
-                dropdownMenuEntries: getTeamDropdownEntries(),
-                width: MediaQuery.of(context).size.width - 5,
-              ),
+              getScoutedTeamWidget(isRedAllianceTeamSelected),
               const SizedBox(height: 10),
               DropdownMenu<MatchType>(
                 label: const Text("Match type"),
@@ -213,8 +191,8 @@ class _HomePageState extends State<HomePage> {
 
                   if (scouterName.isEmpty ||
                       _selectedTeam == null ||
-                      gameNumber.isEmpty ||
-                      !_teams.contains(_selectedTeam)) {
+                      (_teams.isNotEmpty && !_teams.contains(_selectedTeam)) ||
+                      (_selectedTeam?.isEmpty ?? true)) {
                     showDialog(
                       context: context,
                       builder: (context) {
@@ -248,6 +226,42 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
+  }
+
+  Widget getScoutedTeamWidget(bool isRedAllianceTeamSelected) {
+    if (_teams.isNotEmpty) {
+      return DropdownMenu<String>(
+        label: const Text(
+          "Scouting On",
+        ),
+        initialSelection: Scouting.data.scoutedTeam,
+        onSelected: (value) {
+          setState(() {
+            _selectedTeam = value.toString();
+            _selectedTeamIndex = _teams.indexOf(_selectedTeam ?? _teams[0]);
+            Scouting.data.scoutedTeam = _selectedTeam;
+          });
+        },
+        textStyle: TextStyle(
+          color:
+              isRedAllianceTeamSelected ? Colors.redAccent : Colors.blueAccent,
+          fontWeight: FontWeight.bold,
+        ),
+        dropdownMenuEntries: getTeamDropdownEntries(),
+        width: MediaQuery.of(context).size.width - 5,
+      );
+    } else {
+      return DialogTextInput(
+        onSubmit: (value) {
+          setState(() {
+            _selectedTeam = value.toString();
+            _selectedTeamIndex = _teams.indexOf(_selectedTeam ?? _teams[0]);
+            Scouting.data.scoutedTeam = _selectedTeam;
+          });
+        },
+        label: "Scouting On",
+      );
+    }
   }
 
   List<DropdownMenuEntry<String>> getTeamDropdownEntries() {

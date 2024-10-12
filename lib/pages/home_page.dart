@@ -1,6 +1,7 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 
 // Project imports:
 import 'package:scouting_site/pages/login_page.dart';
@@ -260,6 +261,9 @@ class _HomePageState extends State<HomePage> {
           });
         },
         label: "Scouting On",
+        keyboard: TextInputType.number,
+        formatter:
+            TextFormatterBuilder.integerTextFormatter(allowNegative: false),
       );
     }
   }

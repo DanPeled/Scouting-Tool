@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:fl_chart/fl_chart.dart';
+import 'package:scouting_site/services/cast.dart';
 
 // Project imports:
 import 'package:scouting_site/services/scouting/form_data.dart';
@@ -28,6 +29,7 @@ class TeamOverviewPage extends StatefulWidget {
 class _TeamOverviewPageState extends State<TeamOverviewPage> {
   Map<String, double> questionAverages = {};
   Map<String, double> selectedTeamQuestionAverages = {};
+  Map<String, dynamic> selectedTeamQuestionAnswerAverages = {};
   Map<String, Map<String, bool>> questionSwitchesMap = {};
   double screenWidth = 0;
   Map<String, bool> pagesActive = {};
@@ -74,10 +76,32 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
           child: Column(
             children: [
               const SizedBox(height: 100),
-              SizedBox(
-                height: 600,
-                width: screenWidth - 150,
-                child: getTotalScoreGraph(questionSwitchesMap),
+              Row(
+                children: [
+                  SizedBox(
+                    height: 600,
+                    width: screenWidth / 3 * 2,
+                    child: getTotalScoreGraph(questionSwitchesMap),
+                  ),
+                  SizedBox(
+                    height: 600,
+                    width: screenWidth / 3,
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: SizedBox(
+                        width: 40.0,
+                        height: 60.0,
+                        child: Container(
+                          decoration: const BoxDecoration(
+                              color: Color.fromRGBO(30, 30, 30, 1),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8.0))),
+                          child: getQuestionAveragesWidgets(),
+                        ),
+                      ),
+                    ),
+                  )
+                ],
               ),
               const SizedBox(height: 10),
               Row(
@@ -141,6 +165,57 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
           );
         },
         child: const Icon(Icons.settings_outlined),
+      ),
+    );
+  }
+
+  Widget getQuestionAveragesWidgets() {
+    Column averages = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Averages: ",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 30,
+            color: GlobalColors.teamColor,
+          ),
+        ),
+        const Divider(),
+        ...selectedTeamQuestionAnswerAverages.entries.map((entry) {
+          String questionName =
+              entry.key; // Extract the question text from the key
+          double averageValue = entry.value;
+          if (questionName.startsWith("__page")) {
+            return Container();
+          } else {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    questionName,
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    averageValue
+                        .toStringAsFixed(2), // Display the average value
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+            );
+          }
+        })
+      ],
+    );
+
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: averages,
       ),
     );
   }
@@ -280,41 +355,70 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
   void calculateQuestionAverages() {
     Map<String, List<double>> questionScores = {};
     Map<String, List<double>> selectedTeamQuestionScores = {};
+    Map<String, List<dynamic>> selectedTeamQuestionAnswers =
+        {}; // To hold the answers for averaging
+
     // Loop through all forms
     for (FormData form in widget.forms) {
       // Loop through each page in the form
-      for (var page in form.pages) {
+      for (FormPageData page in form.pages) {
+        if (extractNumber(form.scoutedTeam ?? "0") == widget.team) {
+          selectedTeamQuestionAnswerAverages["__page${page.pageName}"] = 1;
+        }
         // Loop through each question on the page
-        for (var question in page.questions) {
+        for (Question question in page.questions) {
           String questionKey = "${page.pageName}_${question.questionText}";
-          // Initialize the list if it's the first time encountering the question
+
+          // Initialize the list for scores if it's the first time encountering the question
           if (!questionScores.containsKey(questionKey)) {
             questionScores[questionKey] = [];
           }
-
-          // Add the score to the question's list
+          // Add the score and answer to their respective lists
           questionScores[questionKey]!.add(question.score);
 
+          // Filter for the selected team
           if (extractNumber(form.scoutedTeam ?? "0") == widget.team) {
+            if (!selectedTeamQuestionAnswers.containsKey(questionKey)) {
+              selectedTeamQuestionAnswers[questionKey] = [];
+            }
             if (!selectedTeamQuestionScores.containsKey(questionKey)) {
               selectedTeamQuestionScores[questionKey] = [];
             }
-
             selectedTeamQuestionScores[questionKey]!.add(question.score);
+            selectedTeamQuestionAnswers[questionKey]!.add(question.answer);
           }
         }
       }
     }
 
-    // Calculate the average for each question
+    // Calculate the average score for each question
     questionScores.forEach((questionText, scores) {
       double average = scores.reduce((a, b) => a + b) / scores.length;
       questionAverages[questionText] = average;
     });
 
+    // Calculate the average score for each question for the selected team
     selectedTeamQuestionScores.forEach((questionText, scores) {
       double average = scores.reduce((a, b) => a + b) / scores.length;
       selectedTeamQuestionAverages[questionText] = average;
+    });
+
+    // Calculate the average answer for each question for the selected team
+    selectedTeamQuestionAnswers.forEach((questionText, answers) {
+      double averageAnswer = answers.map((answer) {
+            if (answer is num) {
+              return tryCast(answer, 0.0);
+            } else {
+              if (answer is bool) {
+                return answer ? 1 : 0;
+              } else {
+                return 0;
+              }
+            }
+          }).reduce((a, b) => a! + b!)! /
+          answers.length;
+
+      selectedTeamQuestionAnswerAverages[questionText] = averageAnswer;
     });
   }
 }

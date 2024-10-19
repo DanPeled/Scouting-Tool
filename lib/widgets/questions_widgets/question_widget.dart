@@ -31,7 +31,7 @@ class QuestionWidgetState extends State<QuestionWidget> {
     if (widget._question.type == AnswerType.multipleChoice) {
       optionsValues = {};
       if (widget._question.options != null) {
-        optionsValues = tryCast(widget._question.answer) ?? {};
+        optionsValues = tryCast(widget._question.answer, null) ?? {};
         for (Object? option in widget._question.options!) {
           optionsValues[option.toString()] = false;
         }

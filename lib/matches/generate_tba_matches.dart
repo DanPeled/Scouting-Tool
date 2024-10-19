@@ -3,11 +3,12 @@ import 'dart:convert';
 import 'dart:io';
 
 // Project imports:
-import 'package:scouting_site/services/scouting/helper_methods.dart';
+import 'package:scouting_site/services/scouting/http_helpers.dart';
 
-void main() async {
-  const String tbaAPIKey =
-      "<APIKEY>"; // example value, replace to use in your own project
+void main(List<String> args) async {
+  print(args[0].runtimeType);
+  final String tbaAPIKey =
+      args[0]; // example value, replace to use in your own project
 
   File jsonFile = File("matches.json");
 
@@ -15,7 +16,7 @@ void main() async {
     jsonFile.createSync(recursive: true);
   }
 
-  var (redAlliance, blueAlliance) = await getEventTeams("2024isde1", tbaAPIKey);
+  var (redAlliance, blueAlliance) = await getTBAEventTeams(args[1], tbaAPIKey);
 
   Map<String, dynamic> blueJson =
       blueAlliance.map((key, value) => MapEntry(key.toString(), value));

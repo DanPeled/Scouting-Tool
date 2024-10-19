@@ -28,8 +28,17 @@ class Scouting {
         ),
         Question(
           type: AnswerType.counter,
-          questionText: "Amount of scored notes",
+          questionText: "Amount of scored speaker notes",
           evaluation: 5.0,
+          options: [
+            0, // initial
+            0, // min
+          ],
+        ),
+        Question(
+          type: AnswerType.counter,
+          questionText: "Amount of scored amp notes",
+          evaluation: 2.0,
           options: [
             0, // initial
             0, // min
@@ -72,6 +81,11 @@ class Scouting {
           type: AnswerType.checkbox,
           questionText: "Climb",
           evaluation: 5.0,
+        ),
+        Question(
+          type: AnswerType.checkbox,
+          questionText: "Harmony",
+          evaluation: 2.0,
         ),
       ],
     ),

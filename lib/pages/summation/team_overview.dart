@@ -29,7 +29,7 @@ class TeamOverviewPage extends StatefulWidget {
 class _TeamOverviewPageState extends State<TeamOverviewPage> {
   Map<String, double> questionAverages = {};
   Map<String, double> selectedTeamQuestionAverages = {};
-  Map<String, dynamic> selectedTeamQuestionAnswerAverages = {};
+  Map<String, double> selectedTeamQuestionAnswerAverages = {};
   Map<String, Map<String, bool>> questionSwitchesMap = {};
   double screenWidth = 0;
   Map<String, bool> pagesActive = {};
@@ -135,6 +135,17 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
                   ),
                 ],
               ),
+              Row(
+                children: [
+                  const SizedBox(width: 150),
+                  SizedBox(
+                    width: 500,
+                    height: 500,
+                    child: getRadarChart(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -165,6 +176,44 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
           );
         },
         child: const Icon(Icons.settings_outlined),
+      ),
+    );
+  }
+
+  List<RadarEntry> getRadarEntries() {
+    List<RadarEntry> entries = [];
+
+    for (MapEntry<String, double> question
+        in selectedTeamQuestionAverages.entries) {
+      entries.add(RadarEntry(value: (question.value)));
+    }
+
+    return entries;
+  }
+
+  Widget getRadarChart() {
+    List<String> questionKeys = selectedTeamQuestionAverages.keys.toList();
+    return RadarChart(
+      RadarChartData(
+        radarBackgroundColor: Colors.transparent,
+        gridBorderData: BorderSide(color: Colors.grey),
+        tickBorderData: BorderSide(color: Colors.grey),
+        titlePositionPercentageOffset: 0.2,
+        dataSets: [
+          RadarDataSet(
+            fillColor: Colors.blueAccent.withOpacity(0.4),
+            borderColor: Colors.blue,
+            entryRadius: 3,
+            dataEntries: getRadarEntries(),
+          ),
+        ],
+        getTitle: (index, double angle) {
+          // Ensure index does not exceed questionKeys length
+          if (index < questionKeys.length) {
+            return RadarChartTitle(text: questionKeys[index]);
+          }
+          return RadarChartTitle(text: '');
+        },
       ),
     );
   }
@@ -407,7 +456,7 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
     selectedTeamQuestionAnswers.forEach((questionText, answers) {
       double averageAnswer = answers.map((answer) {
             if (answer is num) {
-              return tryCast(answer, 0.0);
+              return tryCast(answer, defaultValue: 0.0);
             } else {
               if (answer is bool) {
                 return answer ? 1 : 0;

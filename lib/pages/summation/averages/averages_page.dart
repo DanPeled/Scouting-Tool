@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:scouting_site/pages/summation/averages/comaprasion_page.dart';
 
 // Project imports:
 import 'package:scouting_site/pages/summation/scouting_entries_page.dart';
@@ -14,6 +15,7 @@ import 'package:scouting_site/services/scouting/helper_methods.dart';
 import 'package:scouting_site/services/scouting/question.dart';
 import 'package:scouting_site/services/scouting/scouting.dart';
 import 'package:scouting_site/theme.dart';
+import 'package:scouting_site/widgets/dialog_widgets/dialog_text_figures.dart';
 import 'package:scouting_site/widgets/dialog_widgets/dialog_text_input.dart';
 
 class AveragesPage extends StatefulWidget {
@@ -27,7 +29,6 @@ class AveragesPage extends StatefulWidget {
 
 class _AveragesPageState extends State<AveragesPage> {
   List<FormData> _formsData = [];
-
   Map<String, double> _pageAvgs = {};
   double _totalAllTeamsAvg = 0;
   String _sortBy = "total_score";
@@ -85,158 +86,174 @@ class _AveragesPageState extends State<AveragesPage> {
 
     _formsData = handleSearchQuery(_formsData, _searchQueryMap);
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: _handleBackButton,
-          tooltip: "Back",
-          color: GlobalColors.backButtonColor,
-        ),
-        backgroundColor: GlobalColors.appBarColor,
-        title: const Text(
-          "Averages",
-          style: TextStyle(
-            color: GlobalColors.teamColor,
-            fontWeight: FontWeight.bold,
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: _handleBackButton,
+            tooltip: "Back",
+            color: GlobalColors.backButtonColor,
+          ),
+          backgroundColor: GlobalColors.appBarColor,
+          title: const Text(
+            "Averages",
+            style: TextStyle(
+              color: GlobalColors.teamColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          bottom: const TabBar(
+            indicatorWeight: 4.0,
+            tabs: [Tab(text: "Averages"), Tab(text: "Compare")],
           ),
         ),
-      ),
-      body: SingleChildScrollView(
-        child: Container(
-          color: GlobalColors.backgroundColor,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              const SizedBox(height: 5),
-              DialogTextInput(
-                onSubmit: (value) {
-                  setState(() {
-                    _searchQueryMap = evaluateSearchQuery(value);
-                  });
-                },
-                label: "Search",
-              ),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
+        body: TabBarView(
+          children: [
+            SingleChildScrollView(
+              child: Container(
+                color: GlobalColors.backgroundColor,
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    DataTable(
-                      columns: [
-                        DataColumn(
-                          label: Expanded(
-                            child: Row(
-                              children: [
-                                Text(
-                                  "Team",
-                                  style: TextStyle(
-                                    fontStyle: FontStyle.italic,
-                                    fontWeight: (_sortBy == "team")
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
+                    const SizedBox(height: 5),
+                    DialogTextInput(
+                      onSubmit: (value) {
+                        setState(() {
+                          _searchQueryMap = evaluateSearchQuery(value);
+                        });
+                      },
+                      label: "Search",
+                    ),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          DataTable(
+                            columns: [
+                              DataColumn(
+                                label: Expanded(
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        "Team",
+                                        style: TextStyle(
+                                          fontStyle: FontStyle.italic,
+                                          fontWeight: (_sortBy == "team")
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                        ),
+                                      ),
+                                      IconButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              _sortBy = "team";
+                                            });
+                                          },
+                                          tooltip: "Sort by Team",
+                                          icon: const Icon(Icons.sort_outlined))
+                                    ],
                                   ),
                                 ),
-                                IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _sortBy = "team";
-                                      });
-                                    },
-                                    tooltip: "Sort by Team",
-                                    icon: const Icon(Icons.sort_outlined))
-                              ],
-                            ),
+                              ),
+                              ...getPagesDataColumns(_formsData),
+                            ],
+                            rows: getDataTableRows(),
                           ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Key (Precentile): "),
+                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.only(left: 5, right: 5),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: getColorByScore(0, 100),
+                          ),
+                          child: (const Text("0-25")),
                         ),
-                        ...getPagesDataColumns(_formsData),
+                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.only(left: 5, right: 5),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: getColorByScore(26, 100),
+                          ),
+                          child: (const Text("25-75")),
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.only(left: 5, right: 5),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: getColorByScore(76, 100),
+                          ),
+                          child: (const Text("75-90")),
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.only(left: 5, right: 5),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: getColorByScore(98, 100),
+                          ),
+                          child: (const Text("90-99")),
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.only(left: 5, right: 5),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: getColorByScore(100, 100),
+                          ),
+                          child: (const Text("99-100")),
+                        ),
                       ],
-                      rows: getDataTableRows(),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("Key (Precentile): "),
-                  const SizedBox(width: 10),
-                  Container(
-                    padding: const EdgeInsets.only(left: 5, right: 5),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: getColorByScore(0, 100),
-                    ),
-                    child: (const Text("0-25")),
-                  ),
-                  const SizedBox(width: 10),
-                  Container(
-                    padding: const EdgeInsets.only(left: 5, right: 5),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: getColorByScore(26, 100),
-                    ),
-                    child: (const Text("25-75")),
-                  ),
-                  const SizedBox(width: 10),
-                  Container(
-                    padding: const EdgeInsets.only(left: 5, right: 5),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: getColorByScore(76, 100),
-                    ),
-                    child: (const Text("75-90")),
-                  ),
-                  const SizedBox(width: 10),
-                  Container(
-                    padding: const EdgeInsets.only(left: 5, right: 5),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: getColorByScore(98, 100),
-                    ),
-                    child: (const Text("90-99")),
-                  ),
-                  const SizedBox(width: 10),
-                  Container(
-                    padding: const EdgeInsets.only(left: 5, right: 5),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: getColorByScore(100, 100),
-                    ),
-                    child: (const Text("99-100")),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            ),
+            SingleChildScrollView(
+              child: ComparasionPage(
+                  formsData: widget.formsData,
+                  avgs: calculateAvgs(widget.formsData ?? [])),
+            )
+          ],
         ),
-      ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          IconButton(
-            onPressed: () {
-              _pageAvgs = {};
-              getDocuments();
-            },
-            tooltip: "Re-Fetch Documents",
-            icon: const Icon(Icons.refresh_outlined),
-          ),
-          const SizedBox(width: 12),
-          FloatingActionButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ScoutingEntriesPage(),
-                ),
-              );
-            },
-            tooltip: "All Entries",
-            child: const Icon(Icons.pie_chart),
-          ),
-        ],
+        floatingActionButton: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            IconButton(
+              onPressed: () {
+                _pageAvgs = {};
+                getDocuments();
+              },
+              tooltip: "Re-Fetch Documents",
+              icon: const Icon(Icons.refresh_outlined),
+            ),
+            const SizedBox(width: 12),
+            FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ScoutingEntriesPage(),
+                  ),
+                );
+              },
+              tooltip: "All Entries",
+              child: const Icon(Icons.pie_chart),
+            ),
+          ],
+        ),
       ),
     );
   }

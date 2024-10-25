@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Project imports:
-import 'package:scouting_site/pages/summation/averages_page.dart';
 import 'package:scouting_site/services/firebase/firebase_api.dart';
 import 'package:scouting_site/services/localstorage.dart';
 import 'package:scouting_site/services/scouting/form_data.dart';

@@ -1,8 +1,8 @@
-import 'package:fl_chart/fl_chart.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:scouting_site/services/scouting/form_data.dart';
-import 'package:scouting_site/services/scouting/form_page_data.dart';
-import 'package:scouting_site/services/scouting/question.dart';
 import 'package:scouting_site/widgets/dialog_widgets/dialog_text_figures.dart';
 
 class ComparasionPage extends StatefulWidget {
@@ -33,6 +33,7 @@ class _ComparasionPageState extends State<ComparasionPage> {
                   .toSet()
                   .toList() ??
               [],
+          initialSelection: const [],
         ),
         const SizedBox(height: 10),
       ],

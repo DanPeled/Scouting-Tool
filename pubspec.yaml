@@ -49,9 +49,10 @@ dependencies:
   peanut: ^5.1.0
   http: ^1.2.2
   build_runner: ^2.4.12
-  universal_html: ^2.2.4
-  
+  universal_html: ^2.2.4  
   collection: any
+  statbotics: ^1.0.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

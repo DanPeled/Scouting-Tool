@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:fl_chart/fl_chart.dart';
-import 'package:scouting_site/services/cast.dart';
 
 // Project imports:
+import 'package:scouting_site/services/cast.dart';
 import 'package:scouting_site/services/scouting/form_data.dart';
 import 'package:scouting_site/services/scouting/form_page_data.dart';
 import 'package:scouting_site/services/scouting/helper_methods.dart';
@@ -18,9 +18,13 @@ class TeamOverviewPage extends StatefulWidget {
   final int team;
   final List<FormData> forms;
   final List<FormData> avgs;
-
+  final String teamName;
   const TeamOverviewPage(
-      {super.key, required this.team, required this.forms, required this.avgs});
+      {super.key,
+      required this.team,
+      required this.forms,
+      required this.avgs,
+      required this.teamName});
 
   @override
   State<TeamOverviewPage> createState() => _TeamOverviewPageState();
@@ -63,7 +67,7 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
         ),
         backgroundColor: GlobalColors.appBarColor,
         title: Text(
-          "#${widget.team} Overview",
+          "${widget.teamName} #${widget.team} Overview",
           style: const TextStyle(
             color: GlobalColors.teamColor,
             fontWeight: FontWeight.bold,
@@ -196,8 +200,8 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
     return RadarChart(
       RadarChartData(
         radarBackgroundColor: Colors.transparent,
-        gridBorderData: BorderSide(color: Colors.grey),
-        tickBorderData: BorderSide(color: Colors.grey),
+        gridBorderData: const BorderSide(color: Colors.grey),
+        tickBorderData: const BorderSide(color: Colors.grey),
         titlePositionPercentageOffset: 0.2,
         dataSets: [
           RadarDataSet(
@@ -212,7 +216,7 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
           if (index < questionKeys.length) {
             return RadarChartTitle(text: questionKeys[index]);
           }
-          return RadarChartTitle(text: '');
+          return const RadarChartTitle(text: '');
         },
       ),
     );

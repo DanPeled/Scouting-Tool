@@ -1,17 +1,22 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class DialogTagTextInput extends StatefulWidget {
   final String title;
   final List<String> tags;
   final Function(String tag)? onTagAdded, onTagRemoved;
+  final List<String>? initialSelection;
 
   const DialogTagTextInput(
       {super.key,
       required this.title,
       required this.tags,
       this.onTagAdded,
-      this.onTagRemoved});
+      this.onTagRemoved,
+      this.initialSelection});
 
   @override
   State<DialogTagTextInput> createState() => _DialogTagTextInputState();
@@ -19,7 +24,16 @@ class DialogTagTextInput extends StatefulWidget {
 
 class _DialogTagTextInputState extends State<DialogTagTextInput> {
   final TextEditingController _typeAheadController = TextEditingController();
-  final List<String> _selectedFigures = [];
+  List<String> _selectedFigures = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Set the initial selection if provided
+    if (widget.initialSelection != null) {
+      _selectedFigures = List.from(widget.initialSelection!);
+    }
+  }
 
   List<String> _getSuggestions(String query) {
     return widget.tags

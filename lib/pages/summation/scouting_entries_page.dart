@@ -200,17 +200,6 @@ class _ScoutingEntriesPageState extends State<ScoutingEntriesPage> {
       floatingActionButton: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          // IconButton(
-          //   onPressed: () {
-          //     setState(() {
-          //       _showScouterField = !_showScouterField;
-          //     });
-          //   },
-          //   icon: _showScouterField
-          //       ? const Icon(Icons.south_west_rounded)
-          //       : const Icon(Icons.hide_source_outlined),
-          //   tooltip: "${_showScouterField ? "Hide" : "Show"} Scouter Name",
-          // ),
           IconButton(
             onPressed: () {
               getDocuments();

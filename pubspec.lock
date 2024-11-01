@@ -838,10 +838,10 @@ packages:
     dependency: "direct main"
     description:
       name: statbotics
-      sha256: aade54c64108e723fc6d1fba99252c27c2401ecb8e98fb9865d05366b9617a85
+      sha256: "327a9ab84da60ced448e44004c0683cb7add97d5ee71345994a4ef028f05f252"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.2"
+    version: "1.0.3"
   stream_channel:
     dependency: transitive
     description:

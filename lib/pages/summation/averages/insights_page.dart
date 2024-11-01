@@ -1,6 +1,5 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:flutter/src/material/colors.dart' as col;
 
 // Package imports:
 import 'package:statbotics/statbotics.dart';
@@ -59,9 +58,19 @@ class _InsightsPageState extends State<InsightsPage> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           const SizedBox(height: 5),
-          IconButton(
-            icon: const Icon(Icons.remove_red_eye_outlined),
-            tooltip: "${_showTeamNames ? "Hide" : "Show"} team names",
+          TextButton(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(_showTeamNames
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined),
+                const SizedBox(
+                  width: 5,
+                ),
+                Text("${_showTeamNames ? "Hide" : "Show"} team names"),
+              ],
+            ),
             onPressed: () {
               setState(() {
                 _showTeamNames = !_showTeamNames;
@@ -225,49 +234,43 @@ class _InsightsPageState extends State<InsightsPage> {
     return columns;
   }
 
-  Future<String> _getTeamName(String? number) async {
-    return (await Statbotics.getTeamData(extractNumber(number ?? "N/A"))).name;
+  Future<Team> _getTeamData(String? number) async {
+    return (await Statbotics.getTeamData(extractNumber(number ?? "N/A")));
   }
 
   List<DataRow> getDataTableRows() {
     List<DataRow> rows = [];
     for (FormData form in widget.calculatedFormsData) {
       rows.add(DataRow(cells: [
-        DataCell(FutureBuilder<String>(
-            future: _getTeamName(form.scoutedTeam),
-            builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-              String? teamName = snapshot.data;
-              if (teamName == null) {
-                // Handle name cache
-                teamName =
-                    localStorage?.getString("${form.scoutedTeam}_teamName");
-              } else {
+        DataCell(FutureBuilder<Team>(
+            future: _getTeamData(form.scoutedTeam),
+            builder: (BuildContext context, AsyncSnapshot<Team> snapshot) {
+              Team? team = snapshot.data;
+
+              String? localStorageTeamName =
+                  localStorage?.getString("${form.scoutedTeam}_teamName");
+
+              String? teamName = localStorageTeamName;
+
+              if (team != null && localStorageTeamName != team.name) {
                 // cache name
                 localStorage?.setString(
-                    "${form.scoutedTeam}_teamName", teamName);
+                    "${form.scoutedTeam}_teamName", team.name);
               }
 
-              String fullDisplayName = "#${form.scoutedTeam ?? "N/A"}";
-
-              if (_showTeamNames) {
-                fullDisplayName = "${teamName ?? ""} $fullDisplayName";
+              if (team == null) {
+                // Handle cached names
+                teamName =
+                    localStorage?.getString("${form.scoutedTeam}_teamName");
+              } else if (team.team == form.scoutedTeam) {
+                teamName = team.name;
               }
 
-              return TextButton(
-                  child: Text(fullDisplayName),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => TeamOverviewPage(
-                          team: extractNumber(form.scoutedTeam ?? ""),
-                          forms: widget.originalFormsData,
-                          avgs: widget.calculatedFormsData,
-                          teamName: teamName ?? "",
-                        ),
-                      ),
-                    );
-                  });
+              String fullDisplayName =
+                  getTeamDisplayName(form.scoutedTeam, teamName);
+
+              return getTeamOverivewPageNavigateButton(
+                  form.scoutedTeam, teamName, fullDisplayName);
             })),
         ...getPagesDataRows(
             pages: widget.calculatedFormsData.first.pages, data: form.pages),
@@ -275,6 +278,35 @@ class _InsightsPageState extends State<InsightsPage> {
     }
 
     return rows;
+  }
+
+  String getTeamDisplayName(String? teamNum, String? teamName) {
+    String fullDisplayName = "#${teamNum ?? "N/A"}";
+
+    if (_showTeamNames) {
+      fullDisplayName = "${teamName ?? ""} $fullDisplayName";
+    }
+
+    return fullDisplayName;
+  }
+
+  Widget getTeamOverivewPageNavigateButton(
+      String? team, String? teamName, String displayName) {
+    return TextButton(
+        child: Text(displayName),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TeamOverviewPage(
+                team: extractNumber(team ?? ""),
+                forms: widget.originalFormsData,
+                avgs: widget.calculatedFormsData,
+                teamName: teamName ?? "",
+              ),
+            ),
+          );
+        });
   }
 
   List<DataCell> getPagesDataRows(
@@ -348,15 +380,15 @@ class _InsightsPageState extends State<InsightsPage> {
   Color getColorByScore(double score, double pageAvg) {
     double precentage = score / pageAvg;
     if (precentage <= 0.25) {
-      return col.Colors.redAccent.shade400;
+      return Colors.redAccent.shade400;
     } else if (precentage <= 0.75) {
-      return col.Colors.transparent;
+      return Colors.transparent;
     } else if (precentage <= 0.9) {
-      return col.Colors.redAccent.shade100;
+      return Colors.redAccent.shade100;
     } else if (precentage < 0.99) {
-      return col.Colors.greenAccent.shade400;
+      return Colors.greenAccent.shade400;
     } else {
-      return col.Colors.blueAccent.shade100;
+      return Colors.blueAccent.shade100;
     }
   }
 

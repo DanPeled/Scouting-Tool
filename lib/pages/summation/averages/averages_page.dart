@@ -135,7 +135,7 @@ class _AveragesPageState extends State<AveragesPage> {
       }
     }
 
-    _pageAvgs.map((pageName, score) {
+    _pageAvgs = _pageAvgs.map((pageName, score) {
       return MapEntry(pageName, score / _formsData.length);
     });
   }

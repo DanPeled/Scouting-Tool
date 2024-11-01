@@ -34,7 +34,7 @@ class _AveragesPageState extends State<AveragesPage> {
     setupAverages();
 
     return DefaultTabController(
-      length: 2,
+      length: 1 /* was previously 2 */,
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
@@ -53,7 +53,9 @@ class _AveragesPageState extends State<AveragesPage> {
           ),
           bottom: const TabBar(
             indicatorWeight: 4.0,
-            tabs: [Tab(text: "Insights"), Tab(text: "Compare")],
+            tabs: [
+              Tab(text: "Insights"), /* Tab(text: "Compare") */
+            ],
           ),
         ),
         body: TabBarView(
@@ -66,11 +68,11 @@ class _AveragesPageState extends State<AveragesPage> {
                 calculatedFormsData: _formsData,
               ),
             ),
-            SingleChildScrollView(
+            /* SingleChildScrollView(
               child: ComparasionPage(
                   formsData: widget.formsData,
                   avgs: calculateAvgs(widget.formsData ?? [])),
-            )
+            ) */
           ],
         ),
         floatingActionButton: Row(

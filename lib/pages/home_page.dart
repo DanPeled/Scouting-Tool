@@ -4,7 +4,7 @@ import 'package:flutter/scheduler.dart';
 
 // Project imports:
 import 'package:scouting_site/pages/login_page.dart';
-import 'package:scouting_site/pages/summation/averages_page.dart';
+import 'package:scouting_site/pages/summation/averages/averages_page.dart';
 import 'package:scouting_site/services/formatters/text_formatter_builder.dart';
 import 'package:scouting_site/services/localstorage.dart';
 import 'package:scouting_site/services/scouting/scouting.dart';

@@ -11,6 +11,7 @@ import 'package:scouting_site/services/scouting/scouting.dart';
 import 'package:scouting_site/services/title_case.dart';
 import 'package:scouting_site/theme.dart';
 import 'package:scouting_site/widgets/dialog_widgets/dialog_text_input.dart';
+import 'package:scouting_site/widgets/scout_app_bar.dart';
 
 class ScoutingSite extends StatelessWidget {
   const ScoutingSite({super.key});
@@ -105,16 +106,7 @@ class _HomePageState extends State<HomePage> {
     bool isRedAllianceTeamSelected = _selectedTeamIndex <= 2;
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: GlobalColors.appBarColor,
-        title: const Text(
-          "Scouting-Site",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: GlobalColors.teamColor,
-          ),
-        ),
-      ),
+      appBar: getScoutAppBar("Ionic-Scout"),
       body: Container(
         color: GlobalColors.backgroundColor,
         child: SingleChildScrollView(

@@ -1,96 +1,88 @@
-// Flutter imports:
 import 'package:flutter/material.dart';
-
-// Package imports:
-import 'package:fl_chart/fl_chart.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 class AvgsGraph extends StatelessWidget {
-  final List<FlSpot> avgSpots;
-  final List<FlSpot> teamSpots;
+  final List<double> avgSpots;
+  final List<double> teamSpots;
+  final List<int> games;
 
-  const AvgsGraph({super.key, required this.avgSpots, required this.teamSpots});
+  const AvgsGraph(
+      {super.key,
+      required this.avgSpots,
+      required this.teamSpots,
+      required this.games});
 
   @override
   Widget build(BuildContext context) {
-    final Set<double> xValues = teamSpots.map((spot) => spot.x).toSet();
-    final Set<double> yValues = {
-      ...avgSpots.map((spot) => spot.y),
-      ...teamSpots.map((spot) => spot.y),
-    };
+    // Calculate minimum and maximum x values from the games array
+    final double minX = games.first.toDouble(); // Convert to double
+    final double maxX = games.last.toDouble(); // Convert to double
 
-    return LineChart(
-      LineChartData(
-        titlesData: FlTitlesData(
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              interval: 1,
-              reservedSize: 40,
-              getTitlesWidget: (value, meta) {
-                if (xValues.contains(value)) {
-                  return SideTitleWidget(
-                    axisSide: meta.axisSide,
-                    child: Text(value.toInt().toString()),
-                  );
-                } else {
-                  return Container();
-                }
-              },
-            ),
-          ),
-          topTitles: const AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: false,
-            ),
-          ),
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 80,
-              getTitlesWidget: (value, meta) {
-                if (yValues.contains(value)) {
-                  return SideTitleWidget(
-                    axisSide: meta.axisSide,
-                    child: Text(value.toInt().toString()),
-                  );
-                } else {
-                  return Container();
-                }
-              },
-            ),
-          ),
-          rightTitles: const AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: false,
-            ),
+    // Filter the spots to only include data corresponding to valid games
+    List<Map<String, dynamic>> filteredAvgSpots = [];
+    List<Map<String, dynamic>> filteredTeamSpots = [];
+
+    for (int i = 0; i < games.length; i++) {
+      int game = games[i];
+      if (i < avgSpots.length && i < teamSpots.length) {
+        // Check if both avgSpots and teamSpots are valid numbers before adding them
+        if (avgSpots[i].isFinite && teamSpots[i].isFinite) {
+          filteredAvgSpots.add({'game': game, 'spot': avgSpots[i]});
+          filteredTeamSpots.add({'game': game, 'spot': teamSpots[i]});
+        }
+      }
+    }
+
+    return SfCartesianChart(
+      primaryXAxis: NumericAxis(
+        minimum: minX,
+        maximum: maxX,
+        interval: 1, // Show each integer as a label
+        labelFormat: '{value}', // Show integer format
+        majorGridLines:
+            const MajorGridLines(width: 0), // Optional: hide grid lines
+      ),
+      primaryYAxis: NumericAxis(
+        labelFormat:
+            '{value}', // Optionally show integer values only on the y-axis if needed
+        majorGridLines: const MajorGridLines(width: 0),
+      ),
+      tooltipBehavior: TooltipBehavior(
+        enable: true,
+        header: '', // Hide the header if not needed
+        canShowMarker: false, // Disable the marker in the tooltip
+        tooltipPosition:
+            TooltipPosition.pointer, // Display tooltip pointer at cursor
+      ),
+      series: <ChartSeries>[
+        LineSeries<Map<String, dynamic>, double>(
+          dataSource: filteredAvgSpots,
+          xValueMapper: (data, index) {
+            return data['game'].toDouble(); // Use the game as the x value
+          },
+          yValueMapper: (data, index) => data['spot'],
+          color: Colors.blue, width: 10,
+          markerSettings:
+              const MarkerSettings(isVisible: false), // No dots for avgSpots
+        ),
+        LineSeries<Map<String, dynamic>, double>(
+          dataSource: filteredTeamSpots,
+          xValueMapper: (data, index) {
+            return data['game'].toDouble(); // Use the game as the x value
+          },
+          yValueMapper: (data, index) => data['spot'],
+          color: Colors.red,
+          width: 10,
+          markerSettings: const MarkerSettings(
+            isVisible: true,
+            shape: DataMarkerType.circle,
+            width: 10,
+            height: 10,
+            borderColor: Colors.white,
+            color: Colors.white,
           ),
         ),
-        lineBarsData: [
-          LineChartBarData(
-            spots: avgSpots,
-            isStrokeCapRound: true,
-            isCurved: false,
-            dotData: const FlDotData(show: false), // No dots for avgSpots
-            belowBarData: BarAreaData(show: false),
-          ),
-          LineChartBarData(
-            spots: teamSpots,
-            isCurved: false,
-            dotData: FlDotData(
-                show: true,
-                getDotPainter: (spot, percent, barData, index) {
-                  return FlDotCirclePainter(
-                    radius: 6, // Customize size of dots for teamSpots
-                    color: Colors.red,
-                    strokeWidth: 1,
-                    strokeColor: Colors.black,
-                  );
-                }),
-            color: Colors.red,
-            belowBarData: BarAreaData(show: false),
-          ),
-        ],
-      ),
+      ],
     );
   }
 }

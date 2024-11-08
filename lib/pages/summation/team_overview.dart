@@ -385,24 +385,18 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
 
     totalAvg /= avgs.length;
 
-    List<FlSpot> avgSpots = avgs.entries
-        .map((entry) => FlSpot(
-            entry.key.toDouble(), double.parse(totalAvg.toStringAsFixed(2))))
+    List<double> avgValues = avgs.entries
+        .map((entry) => double.parse(totalAvg.toStringAsFixed(2)))
         .toList();
 
-    List<FlSpot> teamSpots = teamScores.entries
-        .map((entry) => FlSpot(
-            entry.key.toDouble(), double.parse(entry.value.toStringAsFixed(2))))
+    List<double> teamValues = teamScores.entries
+        .map((entry) => double.parse(entry.value.toStringAsFixed(2)))
         .toList();
-
-    // List<FlSpot> zeroSpots = teamScores.entries
-    //     .map((entry) => FlSpot(entry.key.toDouble(), 0.0))
-    //     .toList();
 
     return AvgsGraph(
-      avgSpots: avgSpots,
-      teamSpots: teamSpots,
-    );
+        avgSpots: avgValues,
+        teamSpots: teamValues,
+        games: teamScores.keys.toList());
   }
 
   void calculateQuestionAverages() {

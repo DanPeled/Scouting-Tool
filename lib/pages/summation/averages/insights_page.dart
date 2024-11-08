@@ -273,7 +273,9 @@ class _InsightsPageState extends State<InsightsPage> {
                   form.scoutedTeam, teamName, fullDisplayName);
             })),
         ...getPagesDataRows(
-            pages: widget.calculatedFormsData.first.pages, data: form.pages),
+            pages: widget.calculatedFormsData.first.pages,
+            data: form.pages,
+            team: form.scoutedTeam),
       ]));
     }
 
@@ -310,7 +312,9 @@ class _InsightsPageState extends State<InsightsPage> {
   }
 
   List<DataCell> getPagesDataRows(
-      {required List<FormPageData> pages, required List<FormPageData> data}) {
+      {required List<FormPageData> pages,
+      required List<FormPageData> data,
+      required String? team}) {
     List<DataCell> cells = [];
     List<String> pageNames = pages.map((page) => page.pageName).toList();
     double totalScore = 0;
@@ -318,6 +322,12 @@ class _InsightsPageState extends State<InsightsPage> {
     for (FormPageData page in data) {
       if (pageNames.contains(page.pageName)) {
         if (data.map((page_) => page_.pageName).contains(page.pageName)) {
+          double precentile = widget.originalFormsData
+                  .where((form) => form.pages.any((lookup) =>
+                      page.pageName == lookup.pageName &&
+                      lookup.score < page.score))
+                  .length /
+              widget.originalFormsData.length;
           double score = page.score;
           cells.add(
             DataCell(
@@ -325,8 +335,7 @@ class _InsightsPageState extends State<InsightsPage> {
                 padding: const EdgeInsets.only(left: 5, right: 5),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  color: getColorByScore(
-                      score, widget.pagesAvg[page.pageName] ?? 0),
+                  color: getColorByScore(precentile, 1),
                 ),
                 child: (Text(
                   getNumAsFixed(score),
@@ -340,13 +349,20 @@ class _InsightsPageState extends State<InsightsPage> {
         }
       }
     }
+
+    double totalScorePrecentile = widget.originalFormsData
+            .map((form) => form.score)
+            .where((score) => score < totalScore)
+            .length /
+        widget.originalFormsData.length;
+
     cells.add(
       DataCell(
         Container(
           padding: const EdgeInsets.only(left: 5, right: 5),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
-            color: getColorByScore(totalScore, widget.allTeamsAvg),
+            color: getColorByScore(totalScorePrecentile, 1),
           ),
           child: (Text(
             getNumAsFixed(totalScore),

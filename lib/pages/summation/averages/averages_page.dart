@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Project imports:
-import 'package:scouting_site/pages/summation/averages/comaprasion_page.dart';
 import 'package:scouting_site/pages/summation/averages/insights_page.dart';
 import 'package:scouting_site/pages/summation/scouting_entries_page.dart';
 import 'package:scouting_site/services/firebase/firebase_api.dart';
@@ -28,6 +27,7 @@ class _AveragesPageState extends State<AveragesPage> {
   List<FormData> _formsData = [];
   Map<String, double> _pageAvgs = {};
   double _totalAllTeamsAvg = 0;
+  List<FormData> _pitScoutingData = [];
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +66,7 @@ class _AveragesPageState extends State<AveragesPage> {
                 pagesAvg: _pageAvgs,
                 originalFormsData: widget.formsData ?? [],
                 calculatedFormsData: _formsData,
+                pitScoutingData: _pitScoutingData,
               ),
             ),
             /* SingleChildScrollView(
@@ -157,10 +158,20 @@ class _AveragesPageState extends State<AveragesPage> {
           snapshot.docs.map((doc) => doc.data()).toList();
 
       setState(() {
-        _formsData = data.map((scout) {
-          return FormData.fromJson(scout);
-        }).toList();
-        widget.formsData = _formsData;
+        _formsData = data
+            .map((scout) {
+              return FormData.fromJson(scout);
+            })
+            .where((form) => form.matchType != MatchType.pit)
+            .toList();
+
+        widget.formsData = _formsData
+            .where((form) => form.matchType != MatchType.pit)
+            .toList();
+
+        _pitScoutingData = _formsData
+            .where((form) => form.matchType == MatchType.pit)
+            .toList();
       });
     }
   }

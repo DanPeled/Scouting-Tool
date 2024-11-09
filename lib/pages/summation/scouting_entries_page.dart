@@ -43,7 +43,9 @@ class _ScoutingEntriesPageState extends State<ScoutingEntriesPage> {
   Map<String, dynamic> _searchQuery = {};
   @override
   Widget build(BuildContext context) {
-    _formsData = handleSearchQuery(_formsData, _searchQuery);
+    _formsData = handleSearchQuery(_formsData, _searchQuery)
+        .where((form) => form.matchType != MatchType.pit)
+        .toList();
 
     switch (_sortBy) {
       case "total_score":

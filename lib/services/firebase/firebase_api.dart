@@ -48,7 +48,6 @@ class DatabaseAPI {
       } else {
         Map<String, dynamic> map = {};
         return (map, false);
-        // throw Exception("No data found at the specified document.");
       }
     } on FirebaseException catch (_) {
       rethrow;

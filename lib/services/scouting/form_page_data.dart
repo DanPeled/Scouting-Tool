@@ -1,8 +1,9 @@
 // Project imports:
 import 'package:scouting_site/services/scouting/question.dart';
+import 'package:scouting_site/services/cast.dart';
 
 class FormPageData {
-  final String pageName;
+  String pageName;
   final List<Question> questions;
   final double score;
 
@@ -22,11 +23,11 @@ class FormPageData {
 
   static FormPageData fromJson(Map<String, dynamic> json) {
     return FormPageData(
-      pageName: json['pageName'] as String,
-      questions: (json['questions'] as List)
-          .map((item) => Question.fromJson(item))
+      pageName: tryCast(json['pageName']) ?? "",
+      questions: tryCast(json['questions'],defaultValue: [])
+          !.map((item) => Question.fromJson(item))
           .toList(),
-      score: json['score'] as double,
+      score: tryCast(json['score']) ?? 0.0,
     );
   }
 

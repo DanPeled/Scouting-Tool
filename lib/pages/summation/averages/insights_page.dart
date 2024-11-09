@@ -17,6 +17,7 @@ class InsightsPage extends StatefulWidget {
   final Map<String, double> pagesAvg;
   final List<FormData> originalFormsData;
   final List<FormData> calculatedFormsData;
+  final List<FormData> pitScoutingData;
 
   const InsightsPage({
     super.key,
@@ -24,6 +25,7 @@ class InsightsPage extends StatefulWidget {
     required this.pagesAvg,
     required this.originalFormsData,
     required this.calculatedFormsData,
+    required this.pitScoutingData,
   });
 
   @override
@@ -301,11 +303,13 @@ class _InsightsPageState extends State<InsightsPage> {
             context,
             MaterialPageRoute(
               builder: (context) => TeamOverviewPage(
-                team: extractNumber(team ?? ""),
-                forms: widget.originalFormsData,
-                avgs: widget.calculatedFormsData,
-                teamName: teamName ?? "",
-              ),
+                  team: extractNumber(team ?? ""),
+                  forms: widget.originalFormsData,
+                  avgs: widget.calculatedFormsData,
+                  teamName: teamName ?? "",
+                  pitScoutingData: widget.pitScoutingData
+                      .where((form) => form.scoutedTeam == team)
+                      .toList()),
             ),
           );
         });

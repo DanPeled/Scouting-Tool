@@ -1,9 +1,11 @@
+import 'package:scouting_site/services/cast.dart';
+
 class Question {
-  final AnswerType type;
-  final String questionText;
+  AnswerType type;
+  String questionText;
   Object? answer;
   List<Object?>? options;
-  final Object evaluation;
+  dynamic evaluation;
   final double _score;
 
   Question({
@@ -53,7 +55,7 @@ class Question {
     }
 
     return {
-      'type': type.toString().split('.').last, // Converts enum to string
+      'type': type.name,
       'questionText': questionText,
       'answer': answer,
       'options': options,
@@ -86,7 +88,7 @@ class Question {
 
     switch (type) {
       case AnswerType.text:
-        break;
+        break; // No eval
       case AnswerType.dropdown:
         res = evaluateDropdown();
         break;
@@ -104,40 +106,53 @@ class Question {
 
   static Question fromJson(Map<String, dynamic> json) {
     AnswerType type = _stringToAnswerType(json['type']);
-
     return Question(
-      type: type,
-      questionText: json['questionText'],
-      options: json['options']?.cast<dynamic>(),
-      answer: json['answer'] ?? (type == AnswerType.checkbox ? false : null),
-      score: json['score'] as double,
-    );
+        type: type,
+        questionText: json['questionText'],
+        options: json['options']?.cast<dynamic>(),
+        answer: json['answer'] ?? (type == AnswerType.checkbox ? false : null),
+        score: tryCast(json['score']) ?? 0.0,
+        evaluation: parseEval(json['evaluation']));
   }
 
   static AnswerType _stringToAnswerType(String type) {
-    switch (type) {
-      case 'integer':
-        return AnswerType.integer;
-      case 'number':
-        return AnswerType.number;
-      case 'dropdown':
-        return AnswerType.dropdown;
-      case 'checkbox':
-        return AnswerType.checkbox;
-      case 'multipleChoice':
-        return AnswerType.multipleChoice;
-      case 'text':
-        return AnswerType.text;
-      case 'counter':
-        return AnswerType.counter;
-      default:
-        throw FormatException('Unknown AnswerType: $type');
+    for (AnswerType valueType in AnswerType.values) {
+      if (valueType.name == type) {
+        return valueType;
+      }
+    }
+    return AnswerType.text;
+  }
+
+  static dynamic parseEval(dynamic input) {
+    if (input.runtimeType.toString() == "_JsonMap") {
+      return parseToMap(input.toString());
+    } else {
+      return input;
     }
   }
 
+  static Map<String, dynamic> parseToMap(String input) {
+    // Remove the curly braces and split by commas
+    input = input.substring(1, input.length - 1);
+    List<String> pairs = input.split(', ');
+
+    // Initialize an empty map
+    Map<String, dynamic> resultMap = {};
+
+    // Loop through each key-value pair and add it to the map
+    for (String pair in pairs) {
+      List<String> keyValue = pair.split(': ');
+      String key = keyValue[0].trim();
+      int value = int.parse(keyValue[1].trim());
+      resultMap[key] = value;
+    }
+
+    return resultMap;
+  }
+
   double evaluateDropdown() {
-    Map<String, num> valuesMap = evaluation as Map<String, num>;
-    return (valuesMap[answer ?? valuesMap.keys.first] ?? 0.0) as double;
+    return (evaluation[answer ?? evaluation.keys.first] ?? 0.0) as double;
   }
 
   double evaluateMultipleChoice() {

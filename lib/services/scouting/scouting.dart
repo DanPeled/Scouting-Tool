@@ -17,90 +17,29 @@ import 'package:scouting_site/services/scouting/form_page_data.dart';
 import 'package:scouting_site/services/scouting/question.dart';
 
 class Scouting {
-  static final List<FormPageData> _pages = [
-    FormPageData(
-      pageName: "Autonomous",
-      questions: [
-        Question(
-          type: AnswerType.checkbox,
-          questionText: "Autonomous?",
-          evaluation: 2.0,
-        ),
-        Question(
-          type: AnswerType.counter,
-          questionText: "Amount of scored speaker notes",
-          evaluation: 5.0,
-          options: [
-            0, // initial
-            0, // min
-          ],
-        ),
-        Question(
-          type: AnswerType.counter,
-          questionText: "Amount of scored amp notes",
-          evaluation: 2.0,
-          options: [
-            0, // initial
-            0, // min
-          ],
-        ),
-      ],
-    ),
-    FormPageData(
-      pageName: "TeleOp",
-      questions: [
-        Question(
-          type: AnswerType.counter,
-          questionText: "Scored speaker notes",
-          evaluation: 2.0,
-          options: [
-            0, // initial
-            0, // min
-          ],
-        ),
-        Question(
-          type: AnswerType.counter,
-          questionText: "Scored amp notes",
-          evaluation: 1.0,
-          options: [
-            0, // initial
-            0, // min
-          ],
-        ),
-      ],
-    ),
-    FormPageData(
-      pageName: "End-Game",
-      questions: [
-        Question(
-          type: AnswerType.checkbox,
-          questionText: "Trap",
-          evaluation: 10.0,
-        ),
-        Question(
-          type: AnswerType.checkbox,
-          questionText: "Climb",
-          evaluation: 5.0,
-        ),
-        Question(
-          type: AnswerType.checkbox,
-          questionText: "Harmony",
-          evaluation: 2.0,
-        ),
-      ],
-    ),
-  ];
+  static List<FormPageData> _pitPages = [];
+  static List<FormPageData> _matchPages = [];
 
   static MatchesTeams _matchesTeamsPair = MatchesTeams({}, {});
 
-  static List<BuildContext> _pagesContexts = [];
+  static List<BuildContext> _matchPagesContexts = [];
 
   static const String competitionName = "2024isos2";
 
   static int _currentPage = -1;
 
+  static Future<void> _getFormQuestions() async {
+    var (data, successful) = await DatabaseAPI.instance
+        .downloadJson("form_questions", "${competitionName}_questions");
+
+    if (successful) {
+      _matchPages = Scouting.fromJson(jsonEncode(data["data"][0]));
+      _pitPages = Scouting.fromJson(jsonEncode(data["data"][1]));
+    }
+  }
+
   static FormData data = FormData(
-    pages: _pages,
+    pages: _matchPages,
     scouter: localStorage?.getString("scouter"),
     matchType: MatchType.normal,
   );
@@ -108,16 +47,16 @@ class Scouting {
   static bool hasInternet = true;
 
   static bool isOnLastPage() {
-    return _currentPage >= _pages.length - 1;
+    return _currentPage >= _matchPages.length - 1;
   }
 
   static void _resetValues() {
     _currentPage = -1;
-    _pagesContexts = [];
+    _matchPagesContexts = [];
     data.game = null;
     data.scoutedTeam = null;
 
-    for (FormPageData page in _pages) {
+    for (FormPageData page in _matchPages) {
       for (Question question in page.questions) {
         question.answer = null;
       }
@@ -144,9 +83,13 @@ class Scouting {
     }
 
     initializeData();
-
+    await _getFormQuestions();
     await sendUnsentFormEntries();
-
+    data = FormData(
+      pages: _matchPages,
+      scouter: localStorage?.getString("scouter"),
+      matchType: MatchType.normal,
+    );
     _matchesTeamsPair = await getEventTeamsFromJson();
   }
 
@@ -182,18 +125,22 @@ class Scouting {
   }
 
   static int getPageCount() {
-    return _pages.length;
+    return _matchPages.length;
   }
 
   static FormPage generateCurrentPage() {
-    return FormPage(data: _pages[_currentPage]);
+    if (data.matchType == MatchType.pit) {
+      return FormPage(data: _pitPages[_currentPage]);
+    } else {
+      return FormPage(data: _matchPages[_currentPage]);
+    }
   }
 
   static void advance(BuildContext context) {
-    if (_pages.length - 1 > _currentPage) {
+    if (_matchPages.length - 1 > _currentPage) {
       _currentPage++;
 
-      _pagesContexts.add(context);
+      _matchPagesContexts.add(context);
 
       Navigator.push(
           context,
@@ -203,17 +150,17 @@ class Scouting {
   }
 
   static bool _isIndexValid(int index) {
-    return _pages.length - 1 > _currentPage;
+    return _matchPages.length - 1 > _currentPage;
   }
 
   static String getNextPageName() {
     return (_isIndexValid(_currentPage + 1)
-        ? _pages[_currentPage + 1].pageName
+        ? _matchPages[_currentPage + 1].pageName
         : "Unknown");
   }
 
   static void onPagePop() {
-    _pagesContexts.removeAt(_currentPage);
+    _matchPagesContexts.removeAt(_currentPage);
     _currentPage--;
   }
 
@@ -221,23 +168,32 @@ class Scouting {
     return _currentPage;
   }
 
-  static Map<String, dynamic> toJson() {
+  static Map<String, dynamic> toJson(List<FormPageData> pages, FormData? data) {
     List<Map<String, dynamic>> pagesJson =
-        _pages.map((page) => page.toJson()).toList();
+        pages.map((page) => page.toJson()).toList();
 
-    return {
-      'pages': pagesJson,
-      'scouter': data.scouter,
-      'match_type': data.matchType.name,
-      'scouted_on': data.scoutedTeam,
-      'game': data.game,
-      'score': data.evaluate(),
-    };
+    if (data != null) {
+      return {
+        'pages': pagesJson,
+        'scouter': data.scouter,
+        'match_type': data.matchType.name,
+        'scouted_on': data.scoutedTeam,
+        'game': data.game,
+        'score': data.evaluate(),
+      };
+    } else {
+      return {
+        'pages': pagesJson,
+      };
+    }
   }
 
   static List<FormPageData> fromJson(String jsonString) {
     Map<String, dynamic> jsonMap = jsonDecode(jsonString);
+    return fromJsonMap(jsonMap);
+  }
 
+  static List<FormPageData> fromJsonMap(Map<String, dynamic> jsonMap) {
     List<FormPageData> pages = (jsonMap['pages'] as List<dynamic>)
         .map((item) => FormPageData.fromJson(item as Map<String, dynamic>))
         .toList();
@@ -249,8 +205,8 @@ class Scouting {
       {String? header}) async {
     if (data.scoutedTeam == null) return;
 
-    for (int i = 0; i < _pagesContexts.length; i++) {
-      Navigator.pop(_pagesContexts[i]);
+    for (int i = 0; i < _matchPagesContexts.length; i++) {
+      Navigator.pop(_matchPagesContexts[i]);
     }
 
     header ??= "${DateTime.now()} ${data.scouter ?? ""}";
@@ -267,6 +223,22 @@ class Scouting {
 
   static void initializeData() {
     data.scouter = localStorage?.getString("scouter");
+  }
+
+  static List<FormPageData> getMatchPages() {
+    return _matchPages;
+  }
+
+  static void setMatchPages(List<FormPageData> pages) {
+    _matchPages = pages;
+  }
+
+  static void setPitPages(List<FormPageData> pages) {
+    _pitPages = pages;
+  }
+
+  static List<FormPageData> getPitPages() {
+    return _pitPages;
   }
 }
 
@@ -292,4 +264,4 @@ class MatchesTeams {
   }
 }
 
-enum MatchType { normal, rematch, practice }
+enum MatchType { normal, rematch, practice, pit }

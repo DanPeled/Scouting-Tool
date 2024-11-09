@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:scouting_site/pages/admin_page.dart';
 
 // Project imports:
 import 'package:scouting_site/pages/home_page.dart';
@@ -115,8 +116,11 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {
           _loggedIn = true;
         });
-      } else {
+      } else if (password != passwordData['admin_password']) {
         showWrongPasswordDialog();
+      } else {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const AdminPage()));
       }
     }
   }

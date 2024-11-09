@@ -18,3 +18,9 @@ class GlobalColors {
     return Colors.white;
   }
 }
+
+extension ColorInverter on Color {
+  Color invert() {
+    return Color.fromRGBO(255 - red, 255 - green, 255 - blue, opacity);
+  }
+}

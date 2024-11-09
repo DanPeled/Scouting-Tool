@@ -60,7 +60,15 @@ class _FormPageState extends State<FormPage> {
           else
             FloatingActionButton(
               onPressed: () {
-                Scouting.sendData(Scouting.toJson());
+                List<FormPageData> pages = [];
+
+                if (Scouting.data.matchType == MatchType.pit) {
+                  pages = Scouting.getPitPages();
+                } else {
+                  pages = Scouting.getMatchPages();
+                }
+
+                Scouting.sendData(Scouting.toJson(pages, Scouting.data));
                 Scouting.sendUnsentFormEntries();
               },
               tooltip: "Submit",

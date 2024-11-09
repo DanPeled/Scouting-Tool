@@ -18,13 +18,16 @@ class TeamOverviewPage extends StatefulWidget {
   final int team;
   final List<FormData> forms;
   final List<FormData> avgs;
+  final List<FormData> pitScoutingData;
   final String teamName;
+
   const TeamOverviewPage(
       {super.key,
       required this.team,
       required this.forms,
       required this.avgs,
-      required this.teamName});
+      required this.teamName,
+      required this.pitScoutingData});
 
   @override
   State<TeamOverviewPage> createState() => _TeamOverviewPageState();

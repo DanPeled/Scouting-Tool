@@ -1,9 +1,10 @@
+import 'package:flutter/widgets.dart';
 import 'package:scouting_site/services/cast.dart';
 
 class Question {
   AnswerType type;
   String questionText;
-  Object? answer;
+  dynamic answer;
   List<Object?>? options;
   dynamic evaluation;
   final double _score;
@@ -57,7 +58,7 @@ class Question {
     return {
       'type': type.name,
       'questionText': questionText,
-      'answer': answer,
+      'answer': answer[0],
       'options': options,
       'evaluation': evaluation,
       'score': evaluate(),
@@ -87,6 +88,7 @@ class Question {
     double res = 0;
 
     switch (type) {
+      case AnswerType.photo:
       case AnswerType.text:
         break; // No eval
       case AnswerType.dropdown:
@@ -106,13 +108,27 @@ class Question {
 
   static Question fromJson(Map<String, dynamic> json) {
     AnswerType type = _stringToAnswerType(json['type']);
+
     return Question(
         type: type,
         questionText: json['questionText'],
         options: json['options']?.cast<dynamic>(),
-        answer: json['answer'] ?? (type == AnswerType.checkbox ? false : null),
+        answer: getAnswer(json, type),
         score: tryCast(json['score']) ?? 0.0,
         evaluation: parseEval(json['evaluation']));
+  }
+
+  static dynamic getAnswer(Map<String, dynamic> json, AnswerType type) {
+    if (type == AnswerType.checkbox) {
+      return json['answer'] ?? (type == AnswerType.checkbox ? false : null);
+    } else if (type == AnswerType.photo) {
+      if (json['answer'] == null) {
+        return 0;
+      }
+      return json['answer'];
+    } else {
+      return json["answer"];
+    }
   }
 
   static AnswerType _stringToAnswerType(String type) {
@@ -176,4 +192,5 @@ enum AnswerType {
   checkbox,
   multipleChoice,
   counter,
+  photo
 }

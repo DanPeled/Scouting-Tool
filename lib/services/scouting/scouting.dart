@@ -47,6 +47,9 @@ class Scouting {
   static bool hasInternet = true;
 
   static bool isOnLastPage() {
+    if (data.matchType == MatchType.pit) {
+      return _currentPage >= _pitPages.length - 1;
+    }
     return _currentPage >= _matchPages.length - 1;
   }
 
@@ -57,6 +60,12 @@ class Scouting {
     data.scoutedTeam = null;
 
     for (FormPageData page in _matchPages) {
+      for (Question question in page.questions) {
+        question.answer = null;
+      }
+    }
+
+    for (FormPageData page in _pitPages) {
       for (Question question in page.questions) {
         question.answer = null;
       }
@@ -125,6 +134,9 @@ class Scouting {
   }
 
   static int getPageCount() {
+    if (data.matchType == MatchType.pit) {
+      return _pitPages.length;
+    }
     return _matchPages.length;
   }
 
@@ -137,7 +149,10 @@ class Scouting {
   }
 
   static void advance(BuildContext context) {
-    if (_matchPages.length - 1 > _currentPage) {
+    List<FormPageData> pages =
+        data.matchType == MatchType.pit ? _pitPages : _matchPages;
+
+    if (pages.length - 1 > _currentPage) {
       _currentPage++;
 
       _matchPagesContexts.add(context);
@@ -154,6 +169,11 @@ class Scouting {
   }
 
   static String getNextPageName() {
+    if (data.matchType == MatchType.pit) {
+      return (_isIndexValid(_currentPage + 1)
+          ? _pitPages[_currentPage + 1].pageName
+          : "Unknown");
+    }
     return (_isIndexValid(_currentPage + 1)
         ? _matchPages[_currentPage + 1].pageName
         : "Unknown");

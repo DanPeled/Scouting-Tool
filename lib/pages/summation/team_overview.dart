@@ -1,8 +1,8 @@
-// Flutter imports:
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/services.dart';
 
 // Project imports:
 import 'package:scouting_site/services/cast.dart';
@@ -12,6 +12,7 @@ import 'package:scouting_site/services/scouting/helper_methods.dart';
 import 'package:scouting_site/services/scouting/question.dart';
 import 'package:scouting_site/theme.dart';
 import 'package:scouting_site/widgets/avgs_graph.dart';
+import 'package:scouting_site/widgets/dialog_widgets/dialog_image_corousel.dart';
 import 'package:scouting_site/widgets/dialog_widgets/dialog_toggle_switch.dart';
 
 class TeamOverviewPage extends StatefulWidget {
@@ -60,6 +61,19 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
 
+    List<Uint8List> images = [];
+
+    for (var form in widget.pitScoutingData) {
+      for (var page in form.pages) {
+        for (var question in page.questions) {
+          if (question.type == AnswerType.photo) {
+            images.add(Uint8List.fromList(
+                List<int>.from(question.answer.whereType<int>())));
+          }
+        }
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -82,7 +96,14 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
           color: GlobalColors.backgroundColor,
           child: Column(
             children: [
-              const SizedBox(height: 100),
+              SizedBox(
+                width: 500,
+                height: 500,
+                child: ImageCarousel(
+                  imageBytesList: images,
+                ),
+              ),
+              const SizedBox(height: 50),
               Row(
                 children: [
                   SizedBox(

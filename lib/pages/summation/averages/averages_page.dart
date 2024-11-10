@@ -158,19 +158,20 @@ class _AveragesPageState extends State<AveragesPage> {
           snapshot.docs.map((doc) => doc.data()).toList();
 
       setState(() {
-        _formsData = data
-            .map((scout) {
-              return FormData.fromJson(scout);
-            })
-            .where((form) => form.matchType != MatchType.pit)
+        _formsData = data.map((scout) {
+          return FormData.fromJson(scout);
+        }).toList();
+
+        _pitScoutingData = _formsData
+            .where((form) => form.matchType == MatchType.pit)
             .toList();
 
         widget.formsData = _formsData
             .where((form) => form.matchType != MatchType.pit)
             .toList();
 
-        _pitScoutingData = _formsData
-            .where((form) => form.matchType == MatchType.pit)
+        _formsData = _formsData
+            .where((form) => form.matchType != MatchType.pit)
             .toList();
       });
     }

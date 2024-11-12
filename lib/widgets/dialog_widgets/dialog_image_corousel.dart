@@ -22,7 +22,7 @@ class ImageCarousel extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10.0),
                 child: Image.memory(
                   imageBytes, // Display image from byte data
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                   width: double.infinity,
                 ),
               ),

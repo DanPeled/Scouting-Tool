@@ -42,6 +42,10 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
   double screenWidth = 0;
   Map<String, bool> pagesActive = {};
 
+  List<Uint8List> images = [];
+  double maxImageHeight = 0;
+  double maxImageWidth = 0;
+
   @override
   void initState() {
     super.initState();
@@ -55,24 +59,48 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
         questionSwitchesMap[page.pageName]?[question.questionText] = true;
       }
     }
+
+    _loadImages();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    screenWidth = MediaQuery.of(context).size.width;
-
-    List<Uint8List> images = [];
+  Future<void> _loadImages() async {
+    // Fetch images and determine maximum dimensions
+    List<Uint8List> loadedImages = [];
+    double maxWidth = 0;
+    double maxHeight = 0;
 
     for (var form in widget.pitScoutingData) {
       for (var page in form.pages) {
         for (var question in page.questions) {
           if (question.type == AnswerType.photo) {
-            images.add(Uint8List.fromList(
-                List<int>.from(question.answer.whereType<int>())));
+            Uint8List imageBytes = Uint8List.fromList(
+                List<int>.from(question.answer.whereType<int>()));
+            loadedImages.add(imageBytes);
+
+            // Decode image to get dimensions
+            final decodedImage = await decodeImageFromList(imageBytes);
+            if (decodedImage.width > maxWidth) {
+              maxWidth = decodedImage.width.toDouble();
+            }
+            if (decodedImage.height > maxHeight) {
+              maxHeight = decodedImage.height.toDouble();
+            }
           }
         }
       }
     }
+
+    // Update state with images and max dimensions
+    setState(() {
+      images = loadedImages;
+      maxImageWidth = maxWidth;
+      maxImageHeight = maxHeight;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: AppBar(
@@ -96,12 +124,18 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
           color: GlobalColors.backgroundColor,
           child: Column(
             children: [
-              SizedBox(
-                width: 500,
-                height: 500,
-                child: ImageCarousel(
-                  imageBytesList: images,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  getPitScoutingDatatable(widget.pitScoutingData),
+                  SizedBox(
+                    width: maxImageWidth,
+                    height: maxImageHeight,
+                    child: ImageCarousel(
+                      imageBytesList: images,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 50),
               Row(
@@ -459,10 +493,17 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
         textScaler: const TextScaler.linear(1.5),
       ));
       for (Question question in page.questions) {
-        answersWidgets.add(Text(
-          "${question.questionText}: ${question.answer}",
-          textScaler: const TextScaler.linear(1.2),
-        ));
+        if (question.type != AnswerType.photo) {
+          answersWidgets.add(Text(
+            "${question.questionText}: ${question.answer}",
+            textScaler: const TextScaler.linear(1.2),
+          ));
+        } else {
+          Uint8List imageBytes = Uint8List.fromList(
+              List<int>.from(question.answer.whereType<int>()));
+          answersWidgets.add(Text(question.questionText));
+          answersWidgets.add(Image.memory(imageBytes));
+        }
       }
       answersWidgets.add(const Divider());
       answersWidgets.add(const SizedBox(height: 5));
@@ -555,5 +596,37 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
 
       selectedTeamQuestionAnswerAverages[questionText] = averageAnswer;
     });
+  }
+
+  Widget getPitScoutingDatatable(List<FormData> data) {
+    return Column(
+      children: data.map((form) {
+        return TextButton(
+          onPressed: () {
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text(
+                        "${form.scoutedTeam} - Game #${form.game} by ${form.scouter}"),
+                    content: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SingleChildScrollView(
+                          child: Column(
+                            children: [...getAnswersWidgetsForDialog(form)],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                });
+          },
+          child: Text("${form.scoutedTeam} by ${form.scouter}"),
+        );
+      }).toList(),
+    );
   }
 }

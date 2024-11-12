@@ -24,8 +24,8 @@ class FormPageData {
   static FormPageData fromJson(Map<String, dynamic> json) {
     return FormPageData(
       pageName: tryCast(json['pageName']) ?? "",
-      questions: tryCast(json['questions'],defaultValue: [])
-          !.map((item) => Question.fromJson(item))
+      questions: tryCast(json['questions'], defaultValue: [])!
+          .map((item) => Question.fromJson(item))
           .toList(),
       score: tryCast(json['score']) ?? 0.0,
     );

@@ -8,7 +8,6 @@ import 'package:scouting_site/services/formatters/text_formatter_builder.dart';
 import 'package:scouting_site/services/scouting/question.dart';
 import 'package:scouting_site/widgets/dialog_widgets/dialog_text_input.dart';
 import 'package:scouting_site/widgets/dialog_widgets/dialog_toggle_switch.dart';
-import 'package:scouting_site/widgets/questions_widgets/camera_widget.dart';
 import 'package:scouting_site/widgets/questions_widgets/counter_widget.dart';
 import 'package:scouting_site/widgets/questions_widgets/multiplechoice_widget.dart';
 
@@ -86,12 +85,13 @@ class QuestionWidgetState extends State<QuestionWidget> {
   }
 
   Widget generatePhotoWidget(Question question) {
-    return CameraCaptureWidget(
-      multiple: true,
-      onImageListUpdated: (images) {
-        question.answer = images;
-      },
-    );
+    // return CameraCaptureWidget(
+    //     multiple: true,
+    //    onImageListUpdated: (images) {
+    //     question.answer = images;
+    //  },
+    // );
+    return const Placeholder();
   }
 
   Widget generateMultipleChoice(Question question) {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:camera/camera.dart';
 import 'dart:typed_data';
+import 'dart:io';
 
 class CameraCaptureWidget extends StatefulWidget {
   final bool multiple; // Whether to allow multiple images
-  final Function(List<Uint8List>)?
-      onImageListUpdated; // Callback to listen to images
+  final Function(List<Uint8List>)? onImageListUpdated; // Callback to listen to images
 
   const CameraCaptureWidget({
     Key? key,
@@ -18,42 +18,75 @@ class CameraCaptureWidget extends StatefulWidget {
 }
 
 class _CameraCaptureWidgetState extends State<CameraCaptureWidget> {
-  final ImagePicker _picker = ImagePicker();
+  CameraController? _cameraController;
   List<Uint8List> _images = []; // Store image bytes
 
-  Future<void> _pickImage() async {
+  @override
+  void initState() {
+    super.initState();
+    _initializeCamera();
+  }
+
+  Future<void> _initializeCamera() async {
     try {
-      final XFile? image = await _picker.pickImage(
-        source:
-            ImageSource.gallery, // Use gallery for Flutter Web compatibility
-      );
-
-      if (image != null) {
-        Uint8List imageBytes = await image.readAsBytes();
-
-        setState(() {
-          if (widget.multiple) {
-            _images.add(imageBytes); // Add to list for multiple
-          } else {
-            _images = [imageBytes]; // Only the latest selection
-          }
-        });
-
-        // Notify listener of the updated image list
-        widget.onImageListUpdated?.call(_images);
+      final cameras = await availableCameras();
+      if (cameras.isNotEmpty) {
+        _cameraController = CameraController(
+          cameras[0],
+          ResolutionPreset.medium,
+        );
+        await _cameraController?.initialize();
+        setState(() {}); // Update UI once camera is initialized
       }
     } catch (e) {
-      print("Error selecting image: $e");
+      print("Error initializing camera: $e");
     }
+  }
+
+  Future<void> _captureImage() async {
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      print("Camera not initialized.");
+      return;
+    }
+
+    try {
+      final XFile imageFile = await _cameraController!.takePicture();
+      final Uint8List imageBytes = await File(imageFile.path).readAsBytes();
+
+      setState(() {
+        if (widget.multiple) {
+          _images.add(imageBytes);
+        } else {
+          _images = [imageBytes];
+        }
+      });
+
+      widget.onImageListUpdated?.call(_images);
+    } catch (e) {
+      print("Error capturing image: $e");
+    }
+  }
+
+  @override
+  void dispose() {
+    _cameraController?.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        _cameraController != null && _cameraController!.value.isInitialized
+            ? AspectRatio(
+                aspectRatio: _cameraController!.value.aspectRatio,
+                child: CameraPreview(_cameraController!),
+              )
+            : const Text('Loading camera...'),
+        const SizedBox(height: 20),
         ElevatedButton(
-          onPressed: _pickImage,
-          child: Text(widget.multiple ? 'Select Images' : 'Select Image'),
+          onPressed: _captureImage,
+          child: Text(widget.multiple ? 'Capture Images' : 'Capture Image'),
         ),
         const SizedBox(height: 20),
         _images.isNotEmpty
@@ -70,7 +103,7 @@ class _CameraCaptureWidgetState extends State<CameraCaptureWidget> {
                         ))
                     .toList(),
               )
-            : const Text('No images selected yet.'),
+            : const Text('No images captured yet.'),
       ],
     );
   }

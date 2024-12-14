@@ -55,6 +55,7 @@ dependencies:
   syncfusion_flutter_charts: ^20.2.48
   image_picker: ^1.1.2
   carousel_slider: ^5.0.0
+  camera: ^0.11.0+2
 
 dev_dependencies:
   flutter_test:

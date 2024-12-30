@@ -1,6 +1,6 @@
 // Project imports:
-import 'package:scouting_site/services/scouting/question.dart';
 import 'package:scouting_site/services/cast.dart';
+import 'package:scouting_site/services/scouting/question.dart';
 
 class FormPageData {
   String pageName;

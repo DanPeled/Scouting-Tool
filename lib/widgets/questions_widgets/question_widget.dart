@@ -1,3 +1,6 @@
+// Dart imports:
+import 'dart:convert';
+
 // Flutter imports:
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +11,7 @@ import 'package:scouting_site/services/formatters/text_formatter_builder.dart';
 import 'package:scouting_site/services/scouting/question.dart';
 import 'package:scouting_site/widgets/dialog_widgets/dialog_text_input.dart';
 import 'package:scouting_site/widgets/dialog_widgets/dialog_toggle_switch.dart';
+import 'package:scouting_site/widgets/questions_widgets/camera_widget.dart';
 import 'package:scouting_site/widgets/questions_widgets/counter_widget.dart';
 import 'package:scouting_site/widgets/questions_widgets/multiplechoice_widget.dart';
 
@@ -85,13 +89,11 @@ class QuestionWidgetState extends State<QuestionWidget> {
   }
 
   Widget generatePhotoWidget(Question question) {
-    // return CameraCaptureWidget(
-    //     multiple: true,
-    //    onImageListUpdated: (images) {
-    //     question.answer = images;
-    //  },
-    // );
-    return const Placeholder();
+    return CameraCaptureWidget(
+      onImageCaptured: (Uint8List image) async {
+        question.answer = base64Encode(image);
+      },
+    );
   }
 
   Widget generateMultipleChoice(Question question) {

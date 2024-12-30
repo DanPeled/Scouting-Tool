@@ -1,4 +1,7 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:scouting_site/theme.dart';
 
 AppBar getScoutAppBar(String title) {

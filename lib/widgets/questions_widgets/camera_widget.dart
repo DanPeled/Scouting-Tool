@@ -1,126 +1,112 @@
-import 'dart:developer';
-
-import 'package:flutter/material.dart';
-import 'dart:typed_data';
+// Dart imports:
 import 'dart:convert';
+import 'dart:typed_data';
 
-import 'package:universal_html/html.dart' as html;
+// Flutter imports:
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:camera/camera.dart';
 
 class CameraCaptureWidget extends StatefulWidget {
-  final bool multiple;
-  final Function(List<Uint8List>)? onImageListUpdated;
-
-  const CameraCaptureWidget({
-    super.key,
-    this.multiple = false,
-    this.onImageListUpdated,
-  });
-
+  const CameraCaptureWidget({super.key, this.onImageCaptured});
+  final Function(Uint8List image)? onImageCaptured;
   @override
   State<CameraCaptureWidget> createState() => _CameraCaptureWidgetState();
 }
 
 class _CameraCaptureWidgetState extends State<CameraCaptureWidget> {
-  List<Uint8List> _images = [];
-  html.VideoElement? _videoElement;
+  CameraController? controller;
+  List<CameraDescription>? cameras;
+  bool isCameraInitialized = false;
+  bool _isRearCameraSelected = true;
 
   @override
   void initState() {
     super.initState();
-    _initializeWebCamera();
+    initializeCamera();
   }
 
-  // Initialize the web camera
-  Future<void> _initializeWebCamera() async {
-    try {
-      final html.VideoElement videoElement = html.VideoElement()
-        ..width = 640
-        ..height = 480
-        ..style.border = '1px solid black';
-
-      final html.MediaStream? stream = await html.window.navigator.mediaDevices
-          ?.getUserMedia({'video': true});
-      videoElement.srcObject = stream;
-      html.document.body!
-          .append(videoElement); // Append to DOM to display video
-      videoElement.play();
-
+  Future<void> initializeCamera() async {
+    cameras = await availableCameras();
+    if (cameras != null && cameras!.isNotEmpty) {
+      controller = CameraController(cameras![0], ResolutionPreset.high);
+      await controller!.initialize();
       setState(() {
-        _videoElement = videoElement;
+        isCameraInitialized = true;
       });
-    } catch (e) {
-      log("Error accessing web camera: $e");
     }
   }
 
-  // Capture an image from the video element
-  Future<void> _captureImage() async {
-    if (_videoElement == null) {
-      log("Web camera is not initialized.");
-      return;
-    }
-
+  Future<void> initCamera(CameraDescription cameraDescription) async {
+    controller = CameraController(cameraDescription, ResolutionPreset.high);
     try {
-      final html.CanvasElement canvas =
-          html.CanvasElement(width: 640, height: 480);
-      final html.CanvasRenderingContext2D context = canvas.context2D;
-      context.drawImage(_videoElement!, 0, 0);
+      await controller!.initialize();
+      if (!mounted) return;
+      setState(() {});
+    } on CameraException catch (e) {
+      debugPrint("camera error $e");
+    }
+  }
 
-      // Capture the image from canvas and convert it to a Uint8List
-      final imageBytes = canvas.toDataUrl('image/png');
-      final decodedBytes = base64Decode(imageBytes.split(',').last);
-
-      setState(() {
-        if (widget.multiple) {
-          _images.add(Uint8List.fromList(decodedBytes));
-        } else {
-          _images = [Uint8List.fromList(decodedBytes)];
-        }
-      });
-
-      widget.onImageListUpdated?.call(_images);
-    } catch (e) {
-      log("Error capturing image: $e");
+  Future<void> takePicture() async {
+    if (!controller!.value.isInitialized) return;
+    if (controller!.value.isTakingPicture) return;
+    try {
+      XFile picture = await controller!.takePicture();
+      widget.onImageCaptured!(await picture.readAsBytes());
+    } on CameraException catch (e) {
+      debugPrint('Error occurred while taking picture: $e');
     }
   }
 
   @override
   void dispose() {
-    _videoElement?.pause();
+    controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!isCameraInitialized) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Column(
       children: [
-        _videoElement != null
-            ? const AspectRatio(
-                aspectRatio: 640 / 480,
-                child: HtmlElementView(viewType: 'videoElement'),
-              )
-            : const Text('Loading camera...'),
-        const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: _captureImage,
-          child: Text(widget.multiple ? 'Capture Images' : 'Capture Image'),
+        AspectRatio(
+          aspectRatio: controller!.value.aspectRatio,
+          child: CameraPreview(controller!),
         ),
-        const SizedBox(height: 20),
-        _images.isNotEmpty
-            ? Wrap(
-                children: _images
-                    .map((imageBytes) => Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Image.memory(
-                            imageBytes,
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          ),
-                        ))
-                    .toList(),
-              )
-            : const Text('No images captured yet.'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            if (cameras!.length > 1)
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                iconSize: 30,
+                icon: Icon(
+                  _isRearCameraSelected
+                      ? CupertinoIcons.switch_camera
+                      : CupertinoIcons.switch_camera_solid,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  setState(
+                      () => _isRearCameraSelected = !_isRearCameraSelected);
+                  initCamera(cameras![_isRearCameraSelected ? 0 : 1]);
+                },
+              ),
+            IconButton(
+              onPressed: takePicture,
+              iconSize: 50,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              icon: const Icon(Icons.circle, color: Colors.white),
+            ),
+          ],
+        ),
       ],
     );
   }

@@ -1,8 +1,12 @@
+// Dart imports:
+import 'dart:convert';
+
+// Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/services.dart';
 
 // Project imports:
 import 'package:scouting_site/services/cast.dart';
@@ -73,8 +77,7 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
       for (var page in form.pages) {
         for (var question in page.questions) {
           if (question.type == AnswerType.photo) {
-            Uint8List imageBytes = Uint8List.fromList(
-                List<int>.from(question.answer.whereType<int>()));
+            Uint8List imageBytes = base64Decode(question.answer as String);
             loadedImages.add(imageBytes);
 
             // Decode image to get dimensions
@@ -93,8 +96,8 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
     // Update state with images and max dimensions
     setState(() {
       images = loadedImages;
-      maxImageWidth = maxWidth;
-      maxImageHeight = maxHeight;
+      maxImageWidth = 640;
+      maxImageHeight = 360;
     });
   }
 
@@ -499,10 +502,10 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
             textScaler: const TextScaler.linear(1.2),
           ));
         } else {
-          Uint8List imageBytes = Uint8List.fromList(
-              List<int>.from(question.answer.whereType<int>()));
+          Uint8List imageBytes = base64Decode(question.answer as String);
           answersWidgets.add(Text(question.questionText));
-          answersWidgets.add(Image.memory(imageBytes));
+          answersWidgets.add(SizedBox(
+              width: 300, height: 300, child: Image.memory(imageBytes)));
         }
       }
       answersWidgets.add(const Divider());

@@ -1,8 +1,8 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:scouting_site/pages/admin_page.dart';
 
 // Project imports:
+import 'package:scouting_site/pages/admin_page.dart';
 import 'package:scouting_site/pages/home_page.dart';
 import 'package:scouting_site/services/firebase/firebase_api.dart';
 import 'package:scouting_site/services/localstorage.dart';

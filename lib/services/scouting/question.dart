@@ -1,4 +1,7 @@
+// Flutter imports:
 import 'package:flutter/widgets.dart';
+
+// Project imports:
 import 'package:scouting_site/services/cast.dart';
 
 class Question {
@@ -50,15 +53,21 @@ class Question {
 
   Map<String, dynamic> toJson() {
     _validateAnswer();
+    dynamic answerValue;
 
     if (type == AnswerType.checkbox && answer == null) {
       answer = false;
     }
-
+    if (type == AnswerType.photo) {
+      print("Answer: $answer");
+      answerValue = answer as String;
+    } else {
+      answerValue = answer[0];
+    }
     return {
       'type': type.name,
       'questionText': questionText,
-      'answer': answer[0],
+      'answer': answerValue,
       'options': options,
       'evaluation': evaluation,
       'score': evaluate(),
@@ -123,7 +132,7 @@ class Question {
       return json['answer'] ?? (type == AnswerType.checkbox ? false : null);
     } else if (type == AnswerType.photo) {
       if (json['answer'] == null) {
-        return 0;
+        return "";
       }
       return json['answer'];
     } else {

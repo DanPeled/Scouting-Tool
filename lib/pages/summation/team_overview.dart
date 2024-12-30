@@ -76,7 +76,7 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
     for (var form in widget.pitScoutingData) {
       for (var page in form.pages) {
         for (var question in page.questions) {
-          if (question.type == AnswerType.photo) {
+          if (question.type == AnswerType.photo && question.answer != "") {
             Uint8List imageBytes = base64Decode(question.answer as String);
             loadedImages.add(imageBytes);
 
@@ -127,19 +127,20 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
           color: GlobalColors.backgroundColor,
           child: Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  getPitScoutingDatatable(widget.pitScoutingData),
-                  SizedBox(
-                    width: maxImageWidth,
-                    height: maxImageHeight,
-                    child: ImageCarousel(
-                      imageBytesList: images,
+              if (widget.pitScoutingData.isNotEmpty)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    getPitScoutingDatatable(widget.pitScoutingData),
+                    SizedBox(
+                      width: maxImageWidth,
+                      height: maxImageHeight,
+                      child: ImageCarousel(
+                        imageBytesList: images,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
               const SizedBox(height: 50),
               Row(
                 children: [
@@ -501,7 +502,8 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
             "${question.questionText}: ${question.answer}",
             textScaler: const TextScaler.linear(1.2),
           ));
-        } else {
+        } else if (question.answer != "") {
+          // verify that indeed is picture present
           Uint8List imageBytes = base64Decode(question.answer as String);
           answersWidgets.add(Text(question.questionText));
           answersWidgets.add(SizedBox(

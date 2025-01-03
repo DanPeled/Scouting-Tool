@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // Package imports:
-import 'package:fl_chart/fl_chart.dart';
+import 'package:geekyants_flutter_gauges/geekyants_flutter_gauges.dart';
 
 // Project imports:
 import 'package:scouting_site/services/cast.dart';
@@ -18,6 +18,8 @@ import 'package:scouting_site/theme.dart';
 import 'package:scouting_site/widgets/avgs_graph.dart';
 import 'package:scouting_site/widgets/dialog_widgets/dialog_image_corousel.dart';
 import 'package:scouting_site/widgets/dialog_widgets/dialog_toggle_switch.dart';
+
+// Package imports:
 
 class TeamOverviewPage extends StatefulWidget {
   final int team;
@@ -43,6 +45,8 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
   Map<String, double> selectedTeamQuestionAverages = {};
   Map<String, double> selectedTeamQuestionAnswerAverages = {};
   Map<String, Map<String, bool>> questionSwitchesMap = {};
+  Map<String, Map<String, double>> topValues = {};
+
   double screenWidth = 0;
   Map<String, bool> pagesActive = {};
 
@@ -55,6 +59,7 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
     super.initState();
 
     calculateQuestionAverages();
+    calculateQuestionTopValues();
 
     for (var page in widget.forms.last.pages) {
       questionSwitchesMap[page.pageName] = {};
@@ -65,6 +70,23 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
     }
 
     _loadImages();
+  }
+
+  void calculateQuestionTopValues() {
+    for (FormData form in widget.forms) {
+      for (FormPageData page in form.pages) {
+        topValues.putIfAbsent(page.pageName, () => {});
+        for (Question question in page.questions
+            .where((q) => [double, int].contains(q.answer.runtimeType))) {
+          double val = question.answer;
+          if (!topValues[page.pageName]!.containsKey(question.questionText)) {
+            topValues[page.pageName]![question.questionText] = val;
+          } else if (topValues[page.pageName]![question.questionText]! < val) {
+            topValues[page.pageName]![question.questionText] = val;
+          }
+        }
+      }
+    }
   }
 
   Future<void> _loadImages() async {
@@ -143,30 +165,13 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
                 ),
               const SizedBox(height: 50),
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(
                     height: 600,
                     width: screenWidth / 3 * 2,
                     child: getTotalScoreGraph(questionSwitchesMap),
                   ),
-                  SizedBox(
-                    height: 600,
-                    width: screenWidth / 3,
-                    child: Padding(
-                      padding: const EdgeInsets.all(32.0),
-                      child: SizedBox(
-                        width: 40.0,
-                        height: 60.0,
-                        child: Container(
-                          decoration: const BoxDecoration(
-                              color: Color.fromRGBO(30, 30, 30, 1),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8.0))),
-                          child: getQuestionAveragesWidgets(),
-                        ),
-                      ),
-                    ),
-                  )
                 ],
               ),
               const SizedBox(height: 10),
@@ -191,25 +196,9 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
                 ],
               ),
               const SizedBox(height: 30),
-              const Row(
-                children: [
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Column(
-                      children: [],
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  const SizedBox(width: 150),
-                  SizedBox(
-                    width: 500,
-                    height: 500,
-                    child: getRadarChart(),
-                  ),
-                ],
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: getRadialGauges(),
               ),
               const SizedBox(height: 30),
             ],
@@ -246,42 +235,78 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
     );
   }
 
-  List<RadarEntry> getRadarEntries() {
-    List<RadarEntry> entries = [];
+  List<Widget> getRadialGauges() {
+    List<Widget> gauges = [];
+    List<Widget> currPageGauges = [];
+    String currPage = "";
+    for (var entry in questionAverages.entries) {
+      var split = entry.key.split("_");
+      String pageName = split[0];
+      String questionText = split.getRange(1, split.length).join("_");
+      if (topValues.containsKey(pageName)) {
+        if (topValues[pageName]!.containsKey(questionText)) {
+          if (currPage != pageName) {
+            currPage = pageName;
+            currPageGauges = [];
+            gauges.add(Text(
+              pageName,
+              textScaler: const TextScaler.linear(1.2),
+            ));
 
-    for (MapEntry<String, double> question
-        in selectedTeamQuestionAverages.entries) {
-      entries.add(RadarEntry(value: (question.value)));
-    }
-
-    return entries;
-  }
-
-  Widget getRadarChart() {
-    List<String> questionKeys = selectedTeamQuestionAverages.keys.toList();
-    return RadarChart(
-      RadarChartData(
-        radarBackgroundColor: Colors.transparent,
-        gridBorderData: const BorderSide(color: Colors.grey),
-        tickBorderData: const BorderSide(color: Colors.grey),
-        titlePositionPercentageOffset: 0.2,
-        dataSets: [
-          RadarDataSet(
-            fillColor: Colors.blueAccent.withOpacity(0.4),
-            borderColor: Colors.blue,
-            entryRadius: 3,
-            dataEntries: getRadarEntries(),
-          ),
-        ],
-        getTitle: (index, double angle) {
-          // Ensure index does not exceed questionKeys length
-          if (index < questionKeys.length) {
-            return RadarChartTitle(text: questionKeys[index]);
+            gauges.add(Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: currPageGauges,
+            ));
           }
-          return const RadarChartTitle(text: '');
-        },
-      ),
-    );
+          double start = 0;
+          double end = topValues[pageName]![questionText]!;
+          if (start == end) {
+            end = 10;
+          }
+          currPageGauges.add(
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    RadialGauge(
+                      track: RadialTrack(
+                        start: start,
+                        end: end,
+                        hideLabels: false,
+                        steps: 1,
+                        color: Colors.black,
+                        trackStyle: const TrackStyle(
+                            labelStyle:
+                                TextStyle(color: GlobalColors.teamColor)),
+                        trackLabelFormater: (double value) {
+                          return value.toStringAsFixed(2);
+                        },
+                      ),
+                      valueBar: [
+                        RadialValueBar(
+                          valueBarThickness: 20,
+                          value: entry.value,
+                          color: getColorByPrecentile(entry.value, end),
+                        )
+                      ],
+                    ),
+                    Text(entry.value.toStringAsFixed(2)),
+                  ],
+                ),
+                Transform.translate(
+                  offset: const Offset(0, -70),
+                  child: Text(questionText),
+                )
+              ],
+            ),
+          );
+          currPageGauges.add(const SizedBox(width: 15));
+        }
+      }
+    }
+    return gauges;
   }
 
   Widget getQuestionAveragesWidgets() {

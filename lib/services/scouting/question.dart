@@ -1,5 +1,4 @@
 // Flutter imports:
-import 'package:flutter/widgets.dart';
 
 // Project imports:
 import 'package:scouting_site/services/cast.dart';

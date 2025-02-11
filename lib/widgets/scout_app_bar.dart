@@ -1,10 +1,10 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:scouting_site/pages/home_page.dart';
 import 'package:scouting_site/pages/summation/averages/averages_page.dart';
 import 'package:scouting_site/pages/summation/scouting_entries_page.dart';
-
-// Project imports:
 import 'package:scouting_site/theme.dart';
 
 AppBar getScoutAppBar(String title) {

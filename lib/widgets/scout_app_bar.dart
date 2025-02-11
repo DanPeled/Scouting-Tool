@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:scouting_site/pages/home_page.dart';
 import 'package:scouting_site/pages/summation/averages/averages_page.dart';
 import 'package:scouting_site/pages/summation/scouting_entries_page.dart';
+import 'package:scouting_site/services/scouting/scouting.dart';
 import 'package:scouting_site/theme.dart';
 
 AppBar getScoutAppBar(String title) {
@@ -44,12 +45,18 @@ AppBar getScoutAppBar(String title) {
 }
 
 void navigateTo(BuildContext context, Widget page) {
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(
-      builder: (context) => page,
-    ),
-  );
+  if (ModalRoute.of(context)?.settings.name != page.runtimeType.toString()) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => page,
+        settings: RouteSettings(name: page.runtimeType.toString()),
+      ),
+    );
+  } else {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    Navigator.pop(context);
+  }
 }
 
 Drawer getScoutHamburgerMenu(BuildContext context) {
@@ -57,8 +64,13 @@ Drawer getScoutHamburgerMenu(BuildContext context) {
     child: ListView(
       padding: EdgeInsets.zero,
       children: [
-        const DrawerHeader(
-          child: Text(""),
+        DrawerHeader(
+          child: Column(
+            children: [
+              const Text("Scouting on: ${Scouting.competitionName}"),
+              Text("Scouter Name: ${Scouting.data.scouter}"),
+            ],
+          ),
         ),
         ListTile(
           leading: const Icon(Icons.biotech_rounded),

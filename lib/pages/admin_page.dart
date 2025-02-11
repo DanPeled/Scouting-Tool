@@ -23,7 +23,7 @@ class _AdminPageState extends State<AdminPage>
   List<FormPageData> _matchPages = [];
   List<FormPageData> _pitPages = [];
   int _currentTab = 0;
-  String eventKey = "2024isos2";
+  String eventKey = "2025isde1";
 
   @override
   void initState() {

@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:geekyants_flutter_gauges/geekyants_flutter_gauges.dart';
+import 'package:geekyants_flutter_gauges/geekyants_flutter_gauges.dart';
 
 // Project imports:
 import 'package:scouting_site/services/cast.dart';
@@ -18,6 +19,8 @@ import 'package:scouting_site/theme.dart';
 import 'package:scouting_site/widgets/avgs_graph.dart';
 import 'package:scouting_site/widgets/dialog_widgets/dialog_image_corousel.dart';
 import 'package:scouting_site/widgets/dialog_widgets/dialog_toggle_switch.dart';
+
+// Package imports:
 
 class TeamOverviewPage extends StatefulWidget {
   final int team;

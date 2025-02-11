@@ -19,8 +19,6 @@ import 'package:scouting_site/widgets/avgs_graph.dart';
 import 'package:scouting_site/widgets/dialog_widgets/dialog_image_corousel.dart';
 import 'package:scouting_site/widgets/dialog_widgets/dialog_toggle_switch.dart';
 
-// Package imports:
-
 class TeamOverviewPage extends StatefulWidget {
   final int team;
   final List<FormData> forms;
@@ -250,7 +248,8 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
             currPageGauges = [];
             gauges.add(Text(
               pageName,
-              textScaler: const TextScaler.linear(1.2),
+              textScaler: const TextScaler.linear(1.8),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ));
 
             gauges.add(Row(
@@ -263,6 +262,7 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
           if (start == end) {
             end = 10;
           }
+          Color precentileColor = getColorByPrecentile(entry.value, end);
           currPageGauges.add(
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -277,22 +277,30 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
                         hideLabels: false,
                         steps: 1,
                         color: Colors.black,
+                        thickness: 40,
                         trackStyle: const TrackStyle(
-                            labelStyle:
-                                TextStyle(color: GlobalColors.teamColor)),
+                            labelStyle: TextStyle(
+                          color: GlobalColors.teamColor,
+                          fontWeight: FontWeight.bold,
+                        )),
                         trackLabelFormater: (double value) {
                           return value.toStringAsFixed(2);
                         },
                       ),
                       valueBar: [
                         RadialValueBar(
-                          valueBarThickness: 20,
+                          valueBarThickness: 40,
                           value: entry.value,
-                          color: getColorByPrecentile(entry.value, end),
+                          color: precentileColor,
                         )
                       ],
                     ),
-                    Text(entry.value.toStringAsFixed(2)),
+                    Text(
+                      entry.value.toStringAsFixed(2),
+                      style: TextStyle(
+                          color: precentileColor, fontWeight: FontWeight.bold),
+                      textScaler: const TextScaler.linear(2),
+                    ),
                   ],
                 ),
                 Transform.translate(
@@ -302,7 +310,7 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
               ],
             ),
           );
-          currPageGauges.add(const SizedBox(width: 15));
+          currPageGauges.add(const SizedBox(width: 20));
         }
       }
     }

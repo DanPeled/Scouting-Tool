@@ -4,7 +4,6 @@ import 'package:flutter/scheduler.dart';
 
 // Project imports:
 import 'package:scouting_site/pages/login_page.dart';
-import 'package:scouting_site/pages/summation/averages/averages_page.dart';
 import 'package:scouting_site/services/formatters/text_formatter_builder.dart';
 import 'package:scouting_site/services/localstorage.dart';
 import 'package:scouting_site/services/scouting/scouting.dart';
@@ -107,6 +106,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: getScoutAppBar("Ionic-Scout"),
+      drawer: getScoutHamburgerMenu(context),
       body: Container(
         color: GlobalColors.backgroundColor,
         child: SingleChildScrollView(
@@ -152,68 +152,44 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              const SizedBox(
-                width: 5,
-              ),
-              FloatingActionButton(
-                tooltip: "Entries",
-                child: const Icon(Icons.summarize),
-                onPressed: () async {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AveragesPage(),
-                    ),
-                  );
-                },
-              ),
-              SizedBox(
-                width: (MediaQuery.of(context).size.width - 140),
-              ),
-              FloatingActionButton(
-                heroTag: 1,
-                tooltip: "Scout",
-                child: const Icon(Icons.login_outlined),
-                onPressed: () async {
-                  final scouterName = _scouterController.text.trim();
-                  final gameNumber = _gameController.text.trim();
+          FloatingActionButton(
+            tooltip: "Scout",
+            child: const Icon(Icons.login_outlined),
+            onPressed: () async {
+              final scouterName = _scouterController.text.trim();
+              final gameNumber = _gameController.text.trim();
 
-                  if (scouterName.isEmpty ||
-                      _selectedTeam == null ||
-                      (_teams.isNotEmpty && !_teams.contains(_selectedTeam)) ||
-                      (_selectedTeam?.isEmpty ?? true)) {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: const Text('Validation Error'),
-                          content:
-                              const Text('Please fill in all required fields.'),
-                          actions: [
-                            TextButton(
-                              child: const Text('OK'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
-                        );
-                      },
+              if (scouterName.isEmpty ||
+                  _selectedTeam == null ||
+                  (_teams.isNotEmpty && !_teams.contains(_selectedTeam)) ||
+                  (_selectedTeam?.isEmpty ?? true)) {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Validation Error'),
+                      content:
+                          const Text('Please fill in all required fields.'),
+                      actions: [
+                        TextButton(
+                          child: const Text('OK'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
                     );
-                    return;
-                  }
+                  },
+                );
+                return;
+              }
 
-                  localStorage?.setInt("game", int.parse(gameNumber));
-                  localStorage?.setString("scouter", scouterName);
-                  localStorage?.setString("scoutedTeam", _selectedTeam ?? "");
+              localStorage?.setInt("game", int.parse(gameNumber));
+              localStorage?.setString("scouter", scouterName);
+              localStorage?.setString("scoutedTeam", _selectedTeam ?? "");
 
-                  Scouting.advance(context);
-                },
-              ),
-            ],
+              Scouting.advance(context);
+            },
           ),
         ],
       ),

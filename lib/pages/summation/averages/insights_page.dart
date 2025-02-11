@@ -339,10 +339,12 @@ class _InsightsPageState extends State<InsightsPage> {
                 padding: const EdgeInsets.only(left: 5, right: 5),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  color: getColorByScore(precentile, 1),
+                  color: getColorByPrecentile(precentile, 1),
                 ),
                 child: (Text(
                   getNumAsFixed(score),
+                  style: const TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold),
                 )),
               ),
             ),
@@ -366,10 +368,12 @@ class _InsightsPageState extends State<InsightsPage> {
           padding: const EdgeInsets.only(left: 5, right: 5),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
-            color: getColorByScore(totalScorePrecentile, 1),
+            color: getColorByPrecentile(totalScorePrecentile, 1),
           ),
           child: (Text(
             getNumAsFixed(totalScore),
+            style: const TextStyle(
+                color: Colors.black, fontWeight: FontWeight.bold),
           )),
         ),
       ),
@@ -397,29 +401,17 @@ class _InsightsPageState extends State<InsightsPage> {
     );
   }
 
-  Color getColorByScore(double score, double pageAvg) {
-    double precentage = score / pageAvg;
-    if (precentage <= 0.25) {
-      return Colors.redAccent.shade400;
-    } else if (precentage <= 0.75) {
-      return Colors.transparent;
-    } else if (precentage <= 0.9) {
-      return Colors.redAccent.shade100;
-    } else if (precentage < 0.99) {
-      return Colors.greenAccent.shade400;
-    } else {
-      return Colors.blueAccent.shade100;
-    }
-  }
-
   Widget getPrecentileContainer(String text, double value, double avg) {
     return Container(
       padding: const EdgeInsets.only(left: 5, right: 5),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
-        color: getColorByScore(value, avg),
+        color: getColorByPrecentile(value, avg),
       ),
-      child: (Text(text)),
+      child: (Text(
+        text,
+        style: const TextStyle(color: Colors.black),
+      )),
     );
   }
 }

@@ -18,6 +18,7 @@ import 'package:scouting_site/services/scouting/scouting.dart';
 import 'package:scouting_site/services/title_case.dart';
 import 'package:scouting_site/theme.dart';
 import 'package:scouting_site/widgets/dialog_widgets/dialog_text_input.dart';
+import 'package:scouting_site/widgets/scout_app_bar.dart';
 
 class ScoutingEntriesPage extends StatefulWidget {
   const ScoutingEntriesPage({super.key});
@@ -66,13 +67,8 @@ class _ScoutingEntriesPageState extends State<ScoutingEntriesPage> {
     }
 
     return Scaffold(
+      drawer: getScoutHamburgerMenu(context),
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: _handleBackButton,
-          tooltip: "Back",
-          color: GlobalColors.backButtonColor,
-        ),
         backgroundColor: GlobalColors.appBarColor,
         title: const Text(
           "Scouting Entries",
@@ -199,24 +195,14 @@ class _ScoutingEntriesPageState extends State<ScoutingEntriesPage> {
           ),
         ),
       ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          IconButton(
-            onPressed: () {
-              getDocuments();
-            },
-            tooltip: "Re-Fetch Documents",
-            icon: const Icon(Icons.refresh_outlined),
-          ),
-          const SizedBox(width: 12),
-        ],
+      floatingActionButton: IconButton(
+        onPressed: () {
+          getDocuments();
+        },
+        tooltip: "Re-Fetch Documents",
+        icon: const Icon(Icons.refresh_outlined),
       ),
     );
-  }
-
-  void _handleBackButton() {
-    Navigator.of(context).pop();
   }
 
   void getDocuments() async {

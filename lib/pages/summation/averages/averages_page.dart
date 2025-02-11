@@ -13,6 +13,7 @@ import 'package:scouting_site/services/scouting/form_page_data.dart';
 import 'package:scouting_site/services/scouting/question.dart';
 import 'package:scouting_site/services/scouting/scouting.dart';
 import 'package:scouting_site/theme.dart';
+import 'package:scouting_site/widgets/scout_app_bar.dart';
 
 class AveragesPage extends StatefulWidget {
   List<FormData>? formsData;
@@ -36,13 +37,8 @@ class _AveragesPageState extends State<AveragesPage> {
     return DefaultTabController(
       length: 1 /* was previously 2 */,
       child: Scaffold(
+        drawer: getScoutHamburgerMenu(context),
         appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: _handleBackButton,
-            tooltip: "Back",
-            color: GlobalColors.backButtonColor,
-          ),
           backgroundColor: GlobalColors.appBarColor,
           title: const Text(
             "Averages",
@@ -141,10 +137,6 @@ class _AveragesPageState extends State<AveragesPage> {
     _pageAvgs = _pageAvgs.map((pageName, score) {
       return MapEntry(pageName, score / _formsData.length);
     });
-  }
-
-  void _handleBackButton() {
-    Navigator.of(context).pop();
   }
 
   void getDocuments() async {

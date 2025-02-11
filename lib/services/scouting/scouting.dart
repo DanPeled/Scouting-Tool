@@ -24,7 +24,7 @@ class Scouting {
 
   static List<BuildContext> _matchPagesContexts = [];
 
-  static const String competitionName = "2024isos2";
+  static const String competitionName = "2025isde1";
 
   static int _currentPage = -1;
 

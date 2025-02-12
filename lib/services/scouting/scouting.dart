@@ -24,7 +24,7 @@ class Scouting {
 
   static List<BuildContext> _matchPagesContexts = [];
 
-  static const String competitionName = "2025isde1";
+  static String competitionName = "2025isde1";
 
   static int _currentPage = -1;
 
@@ -242,6 +242,7 @@ class Scouting {
   }
 
   static void initializeData() {
+    competitionName = localStorage?.getString("compName") ?? competitionName;
     data.scouter = localStorage?.getString("scouter");
   }
 

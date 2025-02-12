@@ -114,6 +114,15 @@ class _HomePageState extends State<HomePage> {
             children: [
               const SizedBox(height: 5),
               DialogTextInput(
+                label: "Event Key",
+                onSubmit: (value) {
+                  Scouting.competitionName = value;
+                  localStorage?.setString("compName", value);
+                },
+                initialText: Scouting.competitionName,
+              ),
+              const SizedBox(height: 5),
+              DialogTextInput(
                 label: "Scouter name",
                 textEditingController: _scouterController,
                 onSubmit: (value) {

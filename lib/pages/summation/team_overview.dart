@@ -305,13 +305,15 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
                     valueBar: [
                       RadialValueBar(
                         valueBarThickness: 40,
-                        value: entry.value,
+                        value:
+                            selectedTeamQuestionAnswerAverages[entry.key] ?? 0,
                         color: percentileColor,
                       )
                     ],
                   ),
                   Text(
-                    entry.value.toStringAsFixed(2),
+                    (selectedTeamQuestionAnswerAverages[entry.key] ?? 0)
+                        .toStringAsFixed(2),
                     style: TextStyle(
                       color: percentileColor,
                       fontWeight: FontWeight.bold,

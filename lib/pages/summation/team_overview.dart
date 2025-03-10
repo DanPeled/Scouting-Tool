@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:geekyants_flutter_gauges/geekyants_flutter_gauges.dart';
-import 'package:geekyants_flutter_gauges/geekyants_flutter_gauges.dart';
 
 // Project imports:
 import 'package:scouting_site/services/cast.dart';
@@ -240,83 +239,118 @@ class _TeamOverviewPageState extends State<TeamOverviewPage> {
     List<Widget> gauges = [];
     List<Widget> currPageGauges = [];
     String currPage = "";
+    int gaugeCount = 0;
+    List<Widget> columnGauges = [];
+
     for (var entry in questionAverages.entries) {
       var split = entry.key.split("_");
       String pageName = split[0];
       String questionText = split.getRange(1, split.length).join("_");
-      if (topValues.containsKey(pageName)) {
-        if (topValues[pageName]!.containsKey(questionText)) {
-          if (currPage != pageName) {
-            currPage = pageName;
-            currPageGauges = [];
-            gauges.add(Text(
-              pageName,
-              textScaler: const TextScaler.linear(1.8),
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ));
 
-            gauges.add(Row(
+      if (topValues.containsKey(pageName) &&
+          topValues[pageName]!.containsKey(questionText)) {
+        if (currPage != pageName) {
+          if (currPageGauges.isNotEmpty) {
+            columnGauges.add(Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: currPageGauges,
             ));
+            currPageGauges = [];
           }
-          double start = 0;
-          double end = topValues[pageName]![questionText]!;
-          if (start == end) {
-            end = 10;
+          if (columnGauges.isNotEmpty) {
+            gauges.add(Column(children: columnGauges));
+            columnGauges = [];
           }
-          Color precentileColor = getColorByPrecentile(entry.value, end);
-          currPageGauges.add(
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    RadialGauge(
-                      track: RadialTrack(
-                        start: start,
-                        end: end,
-                        hideLabels: false,
-                        steps: 1,
-                        color: Colors.black,
-                        thickness: 40,
-                        trackStyle: const TrackStyle(
-                            labelStyle: TextStyle(
+
+          currPage = pageName;
+          gaugeCount = 0;
+          gauges.add(Text(
+            pageName,
+            textScaler: const TextScaler.linear(1.8),
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ));
+        }
+
+        double start = 0;
+        double end = topValues[pageName]![questionText]!;
+        if (start == end) end = 10;
+
+        Color percentileColor = getColorByPrecentile(entry.value, end);
+
+        currPageGauges.add(
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  RadialGauge(
+                    track: RadialTrack(
+                      start: start,
+                      end: end,
+                      hideLabels: false,
+                      steps: 1,
+                      color: Colors.black,
+                      thickness: 40,
+                      trackStyle: const TrackStyle(
+                        labelStyle: TextStyle(
                           color: GlobalColors.teamColor,
                           fontWeight: FontWeight.bold,
-                        )),
-                        trackLabelFormater: (double value) {
-                          return value.toStringAsFixed(2);
-                        },
+                        ),
                       ),
-                      valueBar: [
-                        RadialValueBar(
-                          valueBarThickness: 40,
-                          value: entry.value,
-                          color: precentileColor,
-                        )
-                      ],
+                      trackLabelFormater: (double value) {
+                        return value.toStringAsFixed(2);
+                      },
                     ),
-                    Text(
-                      entry.value.toStringAsFixed(2),
-                      style: TextStyle(
-                          color: precentileColor, fontWeight: FontWeight.bold),
-                      textScaler: const TextScaler.linear(2),
+                    valueBar: [
+                      RadialValueBar(
+                        valueBarThickness: 40,
+                        value: entry.value,
+                        color: percentileColor,
+                      )
+                    ],
+                  ),
+                  Text(
+                    entry.value.toStringAsFixed(2),
+                    style: TextStyle(
+                      color: percentileColor,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                ),
-                Transform.translate(
-                  offset: const Offset(0, -70),
-                  child: Text(questionText),
-                )
-              ],
-            ),
-          );
-          currPageGauges.add(const SizedBox(width: 20));
+                    textScaler: const TextScaler.linear(2),
+                  ),
+                ],
+              ),
+              Transform.translate(
+                offset: const Offset(0, -70),
+                child: Text(questionText),
+              )
+            ],
+          ),
+        );
+        currPageGauges.add(const SizedBox(width: 20));
+        gaugeCount++;
+
+        if (gaugeCount >= 5) {
+          columnGauges.add(Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: currPageGauges,
+          ));
+          currPageGauges = [];
+          gaugeCount = 0;
         }
       }
     }
+
+    if (currPageGauges.isNotEmpty) {
+      columnGauges.add(Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: currPageGauges,
+      ));
+    }
+    if (columnGauges.isNotEmpty) {
+      gauges.add(Column(children: columnGauges));
+    }
+
     return gauges;
   }
 

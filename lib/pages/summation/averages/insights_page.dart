@@ -39,7 +39,6 @@ class _InsightsPageState extends State<InsightsPage> {
   @override
   Widget build(BuildContext context) {
     switch (_sortBy) {
-      // BUG: sorting breaks team names
       case "total_score":
         sortByTotalScore(widget.calculatedFormsData);
         break;
@@ -59,7 +58,7 @@ class _InsightsPageState extends State<InsightsPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          const SizedBox(height: 5),
+          const SizedBox(height: 10),
           TextButton(
             child: Row(
               mainAxisSize: MainAxisSize.min,

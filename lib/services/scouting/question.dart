@@ -61,7 +61,7 @@ class Question {
       print("Answer: $answer");
       answerValue = answer as String;
     } else {
-      answerValue = answer[0];
+      answerValue = answer;
     }
     return {
       'type': type.name,

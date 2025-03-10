@@ -1,6 +1,9 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
 
+// Package imports:
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 // Project imports:
 import 'package:scouting_site/pages/home_page.dart';
 import 'package:scouting_site/pages/summation/averages/averages_page.dart';
@@ -67,13 +70,13 @@ Drawer getScoutHamburgerMenu(BuildContext context) {
         DrawerHeader(
           child: Column(
             children: [
-              const Text("Scouting on: ${Scouting.competitionName}"),
+              Text("Scouting on: ${Scouting.competitionName}"),
               Text("Scouter Name: ${Scouting.data.scouter}"),
             ],
           ),
         ),
         ListTile(
-          leading: const Icon(Icons.biotech_rounded),
+          leading: const Icon(FontAwesomeIcons.binoculars),
           title: const Text("Scout"),
           onTap: () {
             navigateTo(context, const HomePage());
